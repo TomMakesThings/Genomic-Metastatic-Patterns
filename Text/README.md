@@ -1,3 +1,3 @@
-# Genomics-II-Group
+# Useful info
 
-Paper: [Genomic characterization of metastatic patterns from prospective clinical sequencing of 25,000 patients](https://www.researchgate.net/publication/352897071_Genomic_characterization_of_metastatic_patterns_from_prospective_clinical_sequencing_of_25000_patients)
+Every person with advanced cancer who is treated at MSK undergoes genetic sequencing of their tumor with MSK-IMPACT™, a tool that looks for mutations in 400-plus cancer-associated genes. Since sequencing started in 2014, MSK has compiled genetic tumor profiles from more than 50,000 patients.
