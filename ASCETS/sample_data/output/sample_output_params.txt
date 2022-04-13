@@ -1,0 +1,5 @@
+sample_output
+Amplification LCR threshold: 0.166321001452024
+Deletion LCR threshold: -0.166321001452024
+Arm-level alteration call threshold: 0.7
+Percent of segments exceeding noise threshold: 2.32273838630807%

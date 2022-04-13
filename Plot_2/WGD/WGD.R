@@ -41,11 +41,23 @@ cna <- read.table(file = "Data/data_cna.txt",
                         header = TRUE, fill = TRUE)
 
 cna_hg19 <- read.table(file = "Data/data_cna_hg19.seg", 
-                       header = TRUE, fill = TRUE)
+                       header = TRUE)
 
 sv <- read.table(file = "Data/data_sv.txt", sep = '\t', quote = "",
                        header = TRUE, fill = TRUE)
 
+
+cna_hg19[1:5, 1:5]
+summary(cna[1:5, 1:5])
+
+summary(cna_hg19$seg.mean)
+summary(cna_hg19$seg.mean)
+
+"P-0008840-T01-IM5" %in% cna_hg19$ID
+
+unique(cna_hg19$chrom)
+
+cna_hg19[which(cna_hg19$ID == "P-0008840-T01-IM5"), ]
 
 library(pctGCdata)
 test_read_counts
