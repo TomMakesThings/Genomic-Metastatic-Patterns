@@ -59,4 +59,20 @@ ggplot(data_wgd,aes(primary_pc,metastasis_pc,label=tumor_type,color=colour))+
   labs(y='Metastatsis median %',x='Primary median %',title = 'Whole genome duplication')
 
 
-data2
+###############################
+#plot figure 2A_tmb
+data_tmb<-tableS2A %>%  filter(alteration=='tmb')
+data_tmb=assign_color(data_tmb)
+data_tmb%>% filter(qval<0.05)
+
+ggplot(data_tmb,aes(primary_median,metastasis_median,label=tumor_type,color=colour))+
+  xlim(-0.02,10)+
+  ylim(-0.02,10)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point()+
+  geom_point(data=data_tmb %>% filter(qval<0.05),alpha=0.5,size=5,aes(color=colour))+
+  scale_color_manual(values=data_tmb$colour)+
+  geom_text(data=data_tmb %>% filter(qval<0.05),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median mut/Mb',x='Primary median mut/Mb',title = 'Tumor mutational burden')
