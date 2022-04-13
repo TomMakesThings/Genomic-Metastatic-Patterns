@@ -53,15 +53,16 @@ calculateSpearmans <- function(data, colour = "black") {
 
 # Find the 50 subtype names
 cancer_subtypes <- unique(samples_data$SUBTYPE)
+metastatic_samples <- samples_data[which(samples_data$MET_SITE_COUNT > 0), ]
 
 # Calculate Spearman's correlation across all samples
-spearmans_df <- calculateSpearmans(samples_data)
+spearmans_df <- calculateSpearmans(metastatic_samples)
 spearmans_df$SUBTYPE <- "PanCan"
 
 # Add Spearman's correlation for each subtype
 for (subtype in cancer_subtypes) {
   # Find samples for the subtype
-  subtype_samples <- samples_data[which(samples_data$SUBTYPE == subtype), ]
+  subtype_samples <- metastatic_samples[which(metastatic_samples$SUBTYPE == subtype), ]
   # Filter to find those with metastasis
   subtype_samples <- subtype_samples[which(subtype_samples$MET_SITE_COUNT > 0), ]
   
@@ -126,11 +127,12 @@ ggplot(spearman_plot_data, aes(x = subtype, y = rho, group = type,
                                color = factor(row.names(spearman_plot_data), # Set as factor so order is the same
                                               levels = row.names(spearman_plot_data)),
                                shape = type)) +
-  geom_pointrange(position = position_dodge(width = 1)) + # Add space between grouped points
+  geom_pointrange(position = position_dodge(width = -1)) + # Add space between grouped points
   coord_flip() +
   labs(title = "Spearman's correlation", x = "", y = "") +
   scale_y_continuous(position = "right", limits = c(-0.6, 0.6)) +
-  theme(axis.text.y = element_text(hjust = 1, colour = rev(spearmans_df$COLOUR))) + # Colour labels
+  theme(axis.text.y = element_text(hjust = 1, colour = rev(spearmans_df$COLOUR)), # Colour labels
+        legend.position = "bottom") + 
   scale_color_manual(values = c(spearmans_df$FGA.COLOUR, spearmans_df$TMB.COLOUR),
                      guide ='none') + # Colour points
   scale_shape_manual(name = "", values = c(16, 18))
