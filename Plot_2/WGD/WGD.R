@@ -46,6 +46,9 @@ cna_hg19 <- read.table(file = "Data/data_cna_hg19.seg",
 sv <- read.table(file = "Data/data_sv.txt", sep = '\t', quote = "",
                        header = TRUE, fill = TRUE)
 
+samples <- read.table(file = "Data/data_clinical_sample.txt", sep = '\t', quote = "",
+                 header = TRUE, fill = TRUE)
+
 
 cna_hg19[1:5, 1:5]
 summary(cna[1:5, 1:5])
