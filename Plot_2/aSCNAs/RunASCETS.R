@@ -80,22 +80,28 @@ arm_level_df <- merge(arm_level_df, average_segmeans,
 # Save to file
 write.csv(arm_level_df, "Plot_2/aSCNAs/sample_arm_level_cna.csv", row.names = FALSE)
 
+# Get list of subtypes
 all_subtypes <- unique(arm_level_df$SUBTYPE)
 subtype_cna_df <- data.frame()
 
+
 for (subtype in all_subtypes) {
+  # Find primary and metastasis samples for each subtype
   subtype_rows <- arm_level_df[which(arm_level_df$SUBTYPE == subtype), ]
   primary_subtype <- subtype_rows[which(subtype_rows$SAMPLE_TYPE == "Primary"), ]
   metastasis_subtype <- subtype_rows[which(subtype_rows$SAMPLE_TYPE == "Metastasis"), ]
   
+  # Calculate average for all numeric columns
   primary_means <- colMeans(primary_subtype[sapply(primary_subtype, is.numeric)])
   metastasis_means <- colMeans(metastasis_subtype[sapply(metastasis_subtype, is.numeric)])
   
+  # Add subtype and sample type to beginning
   primary_means_df <- cbind(data.frame(SUBTYPE = subtype, SAMPLE_TYPE = "Primary"),
                             data.frame(t(primary_means)))
   metastasis_means_df <- cbind(data.frame(SUBTYPE = subtype, SAMPLE_TYPE = "Metastasis"),
                             data.frame(t(metastasis_means)))
   
+  # Add averages to subtype CNA dataframe
   subtype_cna_df <- rbind(subtype_cna_df, primary_means_df)
   subtype_cna_df <- rbind(subtype_cna_df, metastasis_means_df)
 }
