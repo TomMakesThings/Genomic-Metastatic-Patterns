@@ -1,0 +1,5 @@
+ascets_results
+Amplification LCR threshold: 0.2
+Deletion LCR threshold: -0.2
+Arm-level alteration call threshold: 0.7
+Percent of segments exceeding noise threshold: NA%
