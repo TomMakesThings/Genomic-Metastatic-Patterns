@@ -21,8 +21,9 @@ if (run_ascets) {
 # Open results of weighted average segment mean values for each arm in each sample
 average_segmeans <- read.table(file = "Plot_2/aSCNAs/ascets_results_arm_weighted_average_segmeans.txt",
                                header = TRUE, check.names = FALSE)
-average_segmeans$sample
-
+# Open results of anuploidy scores
+aneuploidy_score <- read.table(file = "Plot_2/aSCNAs/ascets_results_aneuploidy_scores.txt",
+                               header = TRUE, check.names = FALSE)
 # Open clinical sample data
 samples_data <- read.table(file = "Data/data_clinical_sample.txt", sep = '\t', 
                            quote = "", header = TRUE, fill = TRUE)
@@ -34,6 +35,8 @@ samples_data <- samples_data[c("SAMPLE_ID", "SUBTYPE", "SAMPLE_TYPE",
 # Combine data to add labels to arm-level CNA results
 arm_level_df <- merge(samples_data, average_segmeans,
                       by.x = "SAMPLE_ID", by.y = "sample")
+arm_level_df <- merge(aneuploidy_score, arm_level_df, 
+      by.x = "sample", by.y = "SAMPLE_ID")
 
 # Save to file
 write.csv(arm_level_df, "Plot_2/aSCNAs/arm_level_cna.csv", row.names = FALSE)
