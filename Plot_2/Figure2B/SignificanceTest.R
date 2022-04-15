@@ -16,7 +16,7 @@ samples_data$Our_WGD <- cna_data$ARM_WGD
 # Get subtypes
 all_subtypes <- unique(samples_data$SUBTYPE)
 
-# Record TMB high for primary and metastasis samples
+# Record TMB high, number of patients and WGD for primary and metastasis samples
 tmb_high_data <- data.frame()
 
 # Record p-values from Mann-Whitney U test of all subtypes
@@ -45,11 +45,15 @@ for (subtype in all_subtypes) {
   tmb_high_data <- rbind(tmb_high_data,
                          data.frame(SUBTYPE = subtype,
                                     SAMPLE_TYPE = "Primary",
-                                    TMB_HIGH_FRACTION = primary_tmb_frac))
+                                    NUM_PATIENTS = nrow(primary_subtype),
+                                    OUR_TMB_HIGH_FRACTION = primary_tmb_frac,
+                                    WGD = mean(primary_subtype$Our_WGD)))
   tmb_high_data <- rbind(tmb_high_data,
                          data.frame(SUBTYPE = subtype,
                                     SAMPLE_TYPE = "Metastasis",
-                                    TMB_HIGH_FRACTION = metastasis_tmb_frac))
+                                    NUM_PATIENTS = nrow(metastasis_subtype),
+                                    OUR_TMB_HIGH_FRACTION = metastasis_tmb_frac,
+                                    WGD = mean(metastasis_subtype$Our_WGD)))
   
   # Mann-Whitney U test to compare primary and metastasis samples
   man_whitney_fga <- wilcox.test(primary_subtype$Our_FGA, metastasis_subtype$Our_FGA)
@@ -90,3 +94,4 @@ significant_df <- data.frame(SUBTYPE = all_subtypes,
 
 # Save to file
 write.csv(significant_df, "Plot_2/Figure2B/significant_subtypes.csv", row.names = FALSE)
+write.csv(significant_df, "Plot_2/Figure2B/tmb_high_and_wgd.csv", row.names = FALSE)

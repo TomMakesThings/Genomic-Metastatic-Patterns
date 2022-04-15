@@ -1,0 +1,101 @@
+"SUBTYPE","SAMPLE_TYPE","NUM_PATIENTS","TMB_HIGH_FRACTION","WGD"
+"Breast Ductal HR+HER2-","Primary",941,0.0148777895855473,0.0612823237690401
+"Breast Ductal HR+HER2-","Metastasis",583,0.0686106346483705,0.0864669921273695
+"Uterine Endometrioid","Primary",442,0.160633484162896,0.0293537533356538
+"Uterine Endometrioid","Metastasis",125,0.136,0.0998974358974359
+"Uterine Serous","Primary",195,0.0153846153846154,0.0607495069033531
+"Uterine Serous","Metastasis",93,0.032258064516129,0.0747173972980424
+"Pleural Mesothelioma","Primary",211,0.014218009478673,0.0475148863774456
+"Pleural Mesothelioma","Metastasis",33,0.0303030303030303,0.0582750582750583
+"Bladder Urothelial","Primary",763,0.424639580602883,0.0669422320798467
+"Bladder Urothelial","Metastasis",198,0.368686868686869,0.0699300699300699
+"Hepatocellular Carcinoma","Primary",168,0.0297619047619048,0.0815018315018315
+"Hepatocellular Carcinoma","Metastasis",37,0.0540540540540541,0.108108108108108
+"Breast Ductal HR+HER2+","Primary",147,0.0408163265306122,0.062096633525205
+"Breast Ductal HR+HER2+","Metastasis",109,0.0825688073394495,0.0811573747353564
+"Stomach Adenocarinoma","Primary",210,0.0380952380952381,0.0306471306471307
+"Stomach Adenocarinoma","Metastasis",110,0.0727272727272727,0.0508158508158508
+"Esophageal Adenocarinoma","Primary",420,0.0595238095238095,0.0645299145299145
+"Esophageal Adenocarinoma","Metastasis",122,0.114754098360656,0.0989911727616646
+"Upper Tract Urothelial","Primary",152,0.335526315789474,0.055668016194332
+"Upper Tract Urothelial","Metastasis",45,0.244444444444444,0.0740740740740741
+"Ovarian High-Grade Serous","Primary",350,0.0142857142857143,0.105128205128205
+"Ovarian High-Grade Serous","Metastasis",647,0.0216383307573416,0.0996710656679745
+"Uterine Hypermutated","Primary",206,0.995145631067961,0.0135673388100572
+"Uterine Hypermutated","Metastasis",62,1,0.0376344086021505
+"Ovarian Clear Cell","Primary",61,0.0655737704918033,0.0559058427910887
+"Ovarian Clear Cell","Metastasis",36,0.0555555555555556,0.0690883190883191
+"Lung Adenocarcinoma","Primary",2479,0.1847519160952,0.0455208365656127
+"Lung Adenocarcinoma","Metastasis",1585,0.261829652996845,0.0869530049340775
+"Sarcoma Leiomyo","Primary",130,0.0153846153846154,0.114792899408284
+"Sarcoma Leiomyo","Metastasis",161,0.0124223602484472,0.111004937091894
+"Breast Lobular HR+","Primary",210,0.0476190476190476,0.0465201465201465
+"Breast Lobular HR+","Metastasis",163,0.190184049079755,0.0703161868806041
+"Testicular Seminoma","Primary",61,0,0.132408575031526
+"Testicular Seminoma","Metastasis",36,0.0277777777777778,0.0854700854700854
+"Small Cell Lung Cancer","Primary",152,0.375,0.151821862348178
+"Small Cell Lung Cancer","Metastasis",162,0.314814814814815,0.197214308325419
+"Cholangio Intrahepatic","Primary",311,0.0385852090032154,0.0590320718938082
+"Cholangio Intrahepatic","Metastasis",96,0.0208333333333333,0.047008547008547
+"Colorectal MSS","Primary",2090,0.0741626794258373,0.0815482762851184
+"Colorectal MSS","Metastasis",1107,0.0813008130081301,0.102124012693118
+"Testicular Non-Seminoma","Primary",122,0,0.0922656578394283
+"Testicular Non-Seminoma","Metastasis",118,0,0.0956106040851804
+"Gastrointestinal Stromal","Primary",270,0.0111111111111111,0.0595441595441596
+"Gastrointestinal Stromal","Metastasis",133,0,0.1158665895508
+"Pancreatic Adenocarcinoma","Primary",1071,0.0121381886087768,0.0199430199430199
+"Pancreatic Adenocarcinoma","Metastasis",708,0.018361581920904,0.0549036650731566
+"Sarcoma Lipo","Primary",140,0,0.0261904761904762
+"Sarcoma Lipo","Metastasis",88,0,0.0303030303030303
+"Ovarian Low-Grade Serous","Primary",32,0,0.0697115384615384
+"Ovarian Low-Grade Serous","Metastasis",57,0.0175438596491228,0.0872694556905083
+"Cholangio Extrahepatic","Primary",74,0.0405405405405405,0.0287595287595288
+"Cholangio Extrahepatic","Metastasis",45,0.111111111111111,0.052991452991453
+"Thyroid Poorly Differentiated","Primary",72,0.0416666666666667,0.0623219373219374
+"Thyroid Poorly Differentiated","Metastasis",59,0.0508474576271186,0.0899608865710561
+"Breast Ductal Triple Negative","Primary",198,0.0202020202020202,0.0780885780885781
+"Breast Ductal Triple Negative","Metastasis",143,0.048951048951049,0.111350188273265
+"Prostate Adenocarcinoma","Primary",1312,0.0274390243902439,0.0324030644152595
+"Prostate Adenocarcinoma","Metastasis",860,0.05,NA
+"Adenoid Cystic Carcinoma","Primary",50,0,0.0425641025641026
+"Adenoid Cystic Carcinoma","Metastasis",102,0,0.0382101558572147
+"Cervical Squamous Cell","Primary",66,0.181818181818182,0.0637140637140637
+"Cervical Squamous Cell","Metastasis",37,0.351351351351351,0.0672210672210673
+"Anal Squamous Cell","Primary",52,0.173076923076923,0.0788954635108481
+"Anal Squamous Cell","Metastasis",35,0.2,0.093040293040293
+"Lung Squamous Cell Carcinoma","Primary",393,0.343511450381679,0.0687675344163894
+"Lung Squamous Cell Carcinoma","Metastasis",144,0.409722222222222,0.10968660968661
+"Cutaneous Squamous Cell","Primary",54,0.740740740740741,0.043684710351377
+"Cutaneous Squamous Cell","Metastasis",51,0.764705882352941,0.0673705379587732
+"Thyroid Papillary","Primary",128,0.0078125,0.0146233974358974
+"Thyroid Papillary","Metastasis",179,0.0111731843575419,0.0216301389485747
+"Renal Clear Cell","Primary",275,0.00727272727272727,0.0441958041958042
+"Renal Clear Cell","Metastasis",146,0.0273972602739726,0.0528626624517036
+"Head and Neck Squamous","Primary",197,0.182741116751269,0.0601327606403749
+"Head and Neck Squamous","Metastasis",215,0.176744186046512,0.0920691711389386
+"Lung Neuroendocrine","Primary",51,0.470588235294118,0.104072398190045
+"Lung Neuroendocrine","Metastasis",58,0.413793103448276,0.160919540229885
+"Breast Ductal HR-HER2+","Primary",65,0.0461538461538462,0.0552268244575937
+"Breast Ductal HR-HER2+","Metastasis",50,0.1,0.0671794871794872
+"Melanoma Cutaneous","Primary",181,0.546961325966851,0.0619067856636917
+"Melanoma Cutaneous","Metastasis",683,0.636896046852123,0.100874723129482
+"Sarcoma UPS/MXF","Primary",129,0.0542635658914729,NA
+"Sarcoma UPS/MXF","Metastasis",74,0.0810810810810811,0.101524601524602
+"Gallbladder Cancer","Primary",85,0.105882352941176,0.0428355957767722
+"Gallbladder Cancer","Metastasis",86,0.0697674418604651,0.0578413834227787
+"Uterine Carcinosarcoma","Primary",129,0.00775193798449612,0.11329755515802
+"Uterine Carcinosarcoma","Metastasis",63,0.0634920634920635,0.113960113960114
+"Melanoma Uveal","Primary",34,0.0294117647058824,0.0565610859728507
+"Melanoma Uveal","Metastasis",69,0.0144927536231884,0.0717205499814196
+"Colorectal Hypermutated","Primary",311,1,0.020859098029516
+"Colorectal Hypermutated","Metastasis",40,0.975,0.0391025641025641
+"Pancreatic Neuroendocrine","Primary",99,0.0303030303030303,0.204869204869205
+"Pancreatic Neuroendocrine","Metastasis",112,0.0892857142857143,0.227106227106227
+"Appendiceal Adenocarcinoma","Primary",88,0.0795454545454545,0.0241841491841492
+"Appendiceal Adenocarcinoma","Metastasis",114,0.043859649122807,0.0269905533063428
+"Small Bowel cancer","Primary",58,0.224137931034483,0.0574712643678161
+"Small Bowel cancer","Metastasis",36,0.138888888888889,0.0562678062678063
+"Melanoma Mucosal","Primary",118,0.0338983050847458,0.115167318557149
+"Melanoma Mucosal","Metastasis",57,0.0526315789473684,0.142150247413405
+"Gastrointestinal Neuroendocrine","Primary",79,0.0886075949367089,0.0691333982473223
+"Gastrointestinal Neuroendocrine","Metastasis",71,0,0.106897797038642
