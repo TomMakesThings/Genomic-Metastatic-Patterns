@@ -4,7 +4,7 @@ library(vioplot)
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
 
 # Open calculated TMB data
-samples_data <- read.csv(file = "Plot_2/TMB/calculated_TMB.csv",
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                           header = TRUE, fill = TRUE)
 
 # Specify the subtypes to plot and their colours
@@ -33,8 +33,8 @@ metastaticStats <- function(data, metastastic_counts = 1:6) {
       # Initialise data for first count
       tmb_primary <- data.frame(primary_meta_samples$Our_TMB)
       tmb_metastasis <- data.frame(metastasis_meta_samples$Our_TMB)
-      fga_primary <- data.frame(primary_meta_samples$FGA)
-      fga_metastasis <- data.frame(metastasis_meta_samples$FGA)
+      fga_primary <- data.frame(primary_meta_samples$Our_FGA)
+      fga_metastasis <- data.frame(metastasis_meta_samples$Our_FGA)
       
     } else {
       # Otherwise add columns to data
@@ -42,9 +42,9 @@ metastaticStats <- function(data, metastastic_counts = 1:6) {
                            by = "row.names", all = TRUE)[-1]
       tmb_metastasis <- merge(tmb_metastasis, data.frame(metastasis_meta_samples$Our_TMB),
                               by = "row.names", all = TRUE)[-1]
-      fga_primary <- merge(fga_primary, data.frame(primary_meta_samples$FGA),
+      fga_primary <- merge(fga_primary, data.frame(primary_meta_samples$Our_FGA),
                            by = "row.names", all = TRUE)[-1]
-      fga_metastasis <- merge(fga_metastasis, data.frame(metastasis_meta_samples$FGA),
+      fga_metastasis <- merge(fga_metastasis, data.frame(metastasis_meta_samples$Our_FGA),
                               by = "row.names", all = TRUE)[-1]
     }
     
@@ -118,7 +118,8 @@ for (subtype in names(subtype_stats)) {
     if (add_legend) {
       legend("topright",
              legend = c("Primary", "Metastasis"),
-             fill = c(colour_primary, colour_metastasis))
+             fill = c(colour_primary, colour_metastasis),
+             cex = 0.8)
     }
   }
 }
