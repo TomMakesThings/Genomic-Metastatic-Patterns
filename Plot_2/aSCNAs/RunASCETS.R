@@ -77,13 +77,9 @@ arm_level_df$ARM_WGD <- amp_frequency
 arm_level_df <- merge(arm_level_df, average_segmeans,
                       by.x = "SAMPLE_ID", by.y = "sample")
 
-# Save to file
-write.csv(arm_level_df, "Plot_2/aSCNAs/sample_arm_level_cna.csv", row.names = FALSE)
-
 # Get list of subtypes
 all_subtypes <- unique(arm_level_df$SUBTYPE)
 subtype_cna_df <- data.frame()
-
 
 for (subtype in all_subtypes) {
   # Find primary and metastasis samples for each subtype
@@ -107,4 +103,5 @@ for (subtype in all_subtypes) {
 }
 
 # Save to file
+write.csv(arm_level_df, "Plot_2/aSCNAs/sample_arm_level_cna.csv", row.names = FALSE)
 write.csv(subtype_cna_df, "Plot_2/aSCNAs/subtype_arm_level_cna.csv", row.names = FALSE)

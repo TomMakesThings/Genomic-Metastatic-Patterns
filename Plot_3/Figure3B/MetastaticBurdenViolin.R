@@ -3,7 +3,7 @@ library(vioplot)
 
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
 
-# Open calculated TMB data
+# Open calculated TMB and FGA data
 samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                           header = TRUE, fill = TRUE)
 
