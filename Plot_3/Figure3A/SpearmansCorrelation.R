@@ -4,33 +4,33 @@ library(ggplot2)
 
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
 
-# Open clinical sample data
-samples_data <- read.table(file = "Data/data_clinical_sample.txt", sep = '\t', 
-                      quote = "", header = TRUE, fill = TRUE)
+# Open calculated TMB and FGA data
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                         header = TRUE, fill = TRUE)
 
 # Get columns of interest
 samples_data <- samples_data[c("SAMPLE_ID", "SUBTYPE", "PRIMARY_SITE",
-                               "METASTATIC_SITE", "MET_SITE_COUNT", "FGA", 
-                               "TMB_NONSYNONYMOUS", "TUMOR_PURITY")]
+                               "METASTATIC_SITE", "MET_SITE_COUNT", "Our_FGA", 
+                               "Our_TMB", "TUMOR_PURITY")]
 
 # Open data with plot colours
 table_s1a <- read_excel("Tables_S1-4/Table_S1.xlsx", sheet = 1, skip = 2)
 
 # Calculate Spearman's correlation coefficient between FGA/TMB and mutational burden
 calculateSpearmans <- function(data, colour = "black") {
-  fga_correlation <- SpearmanRho(x = data$FGA,
+  fga_correlation <- SpearmanRho(x = data$Our_FGA,
                                  y = data$MET_SITE_COUNT,
                                  conf.level = 0.95)
-  tmb_correlation <- SpearmanRho(x = data$TMB_NONSYNONYMOUS,
+  tmb_correlation <- SpearmanRho(x = data$Our_TMB,
                                  y = data$MET_SITE_COUNT,
                                  conf.level = 0.95)
   
   # Extract p-values
-  fga_pvalue <- cor.test(data$FGA,
+  fga_pvalue <- cor.test(data$Our_FGA,
                          data$MET_SITE_COUNT,
                          method = "spearman",
                          exact = FALSE)$p.value
-  tmb_pvalue <- cor.test(data$TMB_NONSYNONYMOUS,
+  tmb_pvalue <- cor.test(data$Our_TMB,
                          data$MET_SITE_COUNT,
                          method = "spearman",
                          exact = FALSE)$p.value
