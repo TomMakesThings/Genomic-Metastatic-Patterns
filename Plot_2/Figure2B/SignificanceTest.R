@@ -46,13 +46,13 @@ for (subtype in all_subtypes) {
                          data.frame(SUBTYPE = subtype,
                                     SAMPLE_TYPE = "Primary",
                                     NUM_PATIENTS = nrow(primary_subtype),
-                                    OUR_TMB_HIGH_FRACTION = primary_tmb_frac,
+                                    TMB_HIGH_FRACTION = primary_tmb_frac,
                                     WGD = mean(primary_subtype$Our_WGD)))
   tmb_high_data <- rbind(tmb_high_data,
                          data.frame(SUBTYPE = subtype,
                                     SAMPLE_TYPE = "Metastasis",
                                     NUM_PATIENTS = nrow(metastasis_subtype),
-                                    OUR_TMB_HIGH_FRACTION = metastasis_tmb_frac,
+                                    TMB_HIGH_FRACTION = metastasis_tmb_frac,
                                     WGD = mean(metastasis_subtype$Our_WGD)))
   
   # Mann-Whitney U test to compare primary and metastasis samples
@@ -94,4 +94,4 @@ significant_df <- data.frame(SUBTYPE = all_subtypes,
 
 # Save to file
 write.csv(significant_df, "Plot_2/Figure2B/significant_subtypes.csv", row.names = FALSE)
-write.csv(significant_df, "Plot_2/Figure2B/tmb_high_and_wgd.csv", row.names = FALSE)
+write.csv(tmb_high_data, "Plot_2/Figure2B/tmb_high_and_wgd.csv", row.names = FALSE)
