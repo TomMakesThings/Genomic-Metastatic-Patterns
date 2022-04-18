@@ -1,9 +1,6 @@
 library(readxl)
 library(DescTools)
 library(ggplot2)
-
-
-
 samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                          header = TRUE, fill = TRUE)
 table_s1a <- read_excel("Tables_S1-4/Table_S1.xlsx", sheet = 1, skip = 2)
@@ -63,7 +60,7 @@ alt_freq_low=NA
 alt_freq_high=NA
 bg_color=NA
 triangle_color=NA
-
+pval=NA
 
 #assign color to mut,amp,del,fus,pathway
 #green,red,blue,purple,navy respectively
@@ -90,6 +87,7 @@ for (i in 1:length(significant_tumor_type$tumor_type)){
         alt_freq_high=c(alt_freq_high,temp$TO_pc[p])
         bg_color=c(bg_color,significant_tumor_type$colour[i])
         triangle_color=c(triangle_color,map_color(temp$alteration[p]))
+        pval=c(pval,temp$pval[p])
     }
     #pathway(regular font, under nonpathway)
   }
@@ -101,12 +99,53 @@ for (i in 1:length(significant_tumor_type$tumor_type)){
       alt_freq_high=c(alt_freq_high,temp$TO_pc[p])
       bg_color=c(bg_color,significant_tumor_type$colour[i])
       triangle_color=c(triangle_color,map_color(temp$alteration[p]))
+      pval=c(pval,temp$pval[p])
     }
   }
 }
 
 
 figure4_plot_info=data.frame(alternation=alt,TO=TO,alternation_freq1=alt_freq_low,alternation_freq2=alt_freq_high,
-                             bg_color=bg_color,triangle_color=triangle_color)
+                             bg_color=bg_color,triangle_color=triangle_color,pval=pval)
 figure4_plot_info
 write.csv(figure4_plot_info, file = "Plot_4/figure4_plot_info.csv",row.names = FALSE)
+
+#file sorted using excel
+#import sorted file
+figure4_plot_info_sorted <- read.csv(file = "Plot_4/figure4_plot_info_sorted.csv",
+                         header = TRUE, fill = TRUE)
+
+install.packages('randomcoloR')
+library(randomcoloR)
+#randomly generate color for each of the target organ
+target_organ_color=randomcoloR::distinctColorPalette(length(target_organ))
+
+TO_color=c()
+for (i in 1:nrow(figure4_plot_info_sorted)){
+  for (j in 1:length(target_organ)){
+    if (figure4_plot_info_sorted$TO[i]==target_organ[j]){
+      TO_color=c(TO_color,target_organ_color[j])
+    }
+  }
+}
+figure4_plot_info_sorted$TO_color=TO_color
+#update sorted file(with generated color for each TO)
+write.csv(figure4_plot_info_sorted, file = "Plot_4/figure4_plot_info_sorted.csv",row.names = FALSE)
+
+figure4_plot_info_sorted %>% filter(bg_color=='#b368d9') %>%  
+  mutate(plotdata=paste0(seq_along(alternation),alternation)) %>%
+  ggplot(aes(x=alternation_freq1*100,y=plotdata,xmin=alternation_freq1,xmax=alternation_freq2,color=factor(triangle_color)))+
+  geom_point(aes(x=alternation_freq1*100,y=plotdata),size=4,shape=20)+
+  geom_text(aes(label=round(alternation_freq1,2)*100),hjust=-1,vjust=0.5)+
+  geom_point(aes(x=alternation_freq2*100,y=plotdata),size=5,shape=20)+
+  theme(panel.background = element_rect(fill = alpha('#b368d9',0.5), color = '#b368d9'))+
+  scale_x_continuous(position='top',limits = c(0, 100))
+?geom_point
+ 
+  
+
+figure4_plot_info_sorted %>%
+  mutate(plotdata=paste0(seq_along(alternation),alternation)) %>%
+  ggplot(aes(x=rep(100,length(alternation)),y=plotdata))+
+  scale_x_continuous(limits = c(0, 100))
+0
