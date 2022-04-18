@@ -129,6 +129,8 @@ for (r in row.names(significant_subtypes_df)) {
       regression_significant <- coefficient_p_value < 0.05
 
       if (genomic_feature == measure_columns[["fga"]]) {
+        if (subtype == "Sarcoma Lipo") {
+        }
         spearmans_df[r,]$FGA.SIGNIFICANT <- spearmans_df[r,]$FGA.SIGNIFICANT & regression_significant
       } else {
         spearmans_df[r,]$TMB.SIGNIFICANT <- spearmans_df[r,]$TMB.SIGNIFICANT & regression_significant
@@ -170,6 +172,7 @@ spearman_plot_data$subtype <- factor(spearman_plot_data$subtype,
                                                     ")", sep = "")))
 
 # Plot point range with spearman's rho
+pdf(file = "Plot_3/Figure3A/Figure_3A.pdf", width = 4, height = 4)
 ggplot(spearman_plot_data, aes(x = subtype, y = rho, group = type, 
                                ymin = conf_lower, ymax = conf_upper, # Confidence interval
                                color = factor(row.names(spearman_plot_data), # Set as factor so order is the same
@@ -184,3 +187,4 @@ ggplot(spearman_plot_data, aes(x = subtype, y = rho, group = type,
   scale_color_manual(values = c(spearmans_df$FGA.COLOUR, spearmans_df$TMB.COLOUR),
                      guide ='none') + # Colour points
   scale_shape_manual(name = "", values = c(16, 18))
+dev.off()
