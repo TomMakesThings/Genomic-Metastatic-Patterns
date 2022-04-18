@@ -34,8 +34,10 @@ removeEmptyCols <- function(df) {
 
 
 # Open mutation data
-mutations <- removeEmptyCols(read.table(file = "Data/data_mutations.txt", 
-                                        header = TRUE, fill = TRUE))
+mutations <- read.table(file = "Data/data_mutations.txt", 
+                                        header = TRUE, fill = TRUE)
+
+unique(mutations$Variant_Type)
 
 cna <- read.table(file = "Data/data_cna.txt", 
                         header = TRUE, fill = TRUE)

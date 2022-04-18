@@ -1,36 +1,40 @@
 library(readxl)
 library(DescTools)
 library(ggplot2)
+library(rcompanion)
 
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
+
+# Specify the column names for FGA and TMB in the sample data
+measure_columns <- list(fga = "Our_FGA", tmb = "Our_TMB")
 
 # Open calculated TMB and FGA data
 samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                          header = TRUE, fill = TRUE)
 
 # Get columns of interest
-samples_data <- samples_data[c("SAMPLE_ID", "SUBTYPE", "PRIMARY_SITE",
-                               "METASTATIC_SITE", "MET_SITE_COUNT", "Our_FGA", 
-                               "Our_TMB", "TUMOR_PURITY")]
+samples_data <- samples_data[c("SAMPLE_ID", "SUBTYPE", "SAMPLE_TYPE", "PRIMARY_SITE",
+                               "METASTATIC_SITE", "MET_SITE_COUNT",
+                               measure_columns[["fga"]], measure_columns[["tmb"]])]
 
 # Open data with plot colours
 table_s1a <- read_excel("Tables_S1-4/Table_S1.xlsx", sheet = 1, skip = 2)
 
 # Calculate Spearman's correlation coefficient between FGA/TMB and mutational burden
 calculateSpearmans <- function(data, colour = "black") {
-  fga_correlation <- SpearmanRho(x = data$Our_FGA,
+  fga_correlation <- SpearmanRho(x = data[[measure_columns[["fga"]]]],
                                  y = data$MET_SITE_COUNT,
                                  conf.level = 0.95)
-  tmb_correlation <- SpearmanRho(x = data$Our_TMB,
+  tmb_correlation <- SpearmanRho(x = data[[measure_columns[["tmb"]]]],
                                  y = data$MET_SITE_COUNT,
                                  conf.level = 0.95)
   
   # Extract p-values
-  fga_pvalue <- cor.test(data$Our_FGA,
+  fga_pvalue <- cor.test(data[[measure_columns[["fga"]]]],
                          data$MET_SITE_COUNT,
                          method = "spearman",
                          exact = FALSE)$p.value
-  tmb_pvalue <- cor.test(data$Our_TMB,
+  tmb_pvalue <- cor.test(data[[measure_columns[["tmb"]]]],
                          data$MET_SITE_COUNT,
                          method = "spearman",
                          exact = FALSE)$p.value
@@ -61,11 +65,10 @@ spearmans_df$SUBTYPE <- "PanCan"
 
 # Add Spearman's correlation for each subtype
 for (subtype in cancer_subtypes) {
+  
   # Find samples for the subtype
   subtype_samples <- metastatic_samples[which(metastatic_samples$SUBTYPE == subtype), ]
-  # Filter to find those with metastasis
-  subtype_samples <- subtype_samples[which(subtype_samples$MET_SITE_COUNT > 0), ]
-  
+  # Set the plot colour
   subtype_colour <- table_s1a[which(table_s1a$curated_subtype_display == subtype), ]$color_subtype
   
   # Add row for spearman's correlation with FGA and TMB
@@ -85,13 +88,58 @@ spearmans_df$TMB.SIGNIFICANT <- spearmans_df$TMB.QVAL < 0.05
 significant_subtypes_df <- spearmans_df[which(spearmans_df$FGA.SIGNIFICANT |
                                                 spearmans_df$TMB.SIGNIFICANT), ]
 
-# Set colours for significant values
+# Set default colours for non-significant values
 spearmans_df$FGA.COLOUR <- "grey"
 spearmans_df$TMB.COLOUR <- "grey"
 
+# Iterate through significant subtypes
 for (r in row.names(significant_subtypes_df)) {
+  # Set the name of the subtype
+  subtype <- spearmans_df[r,]$SUBTYPE
+  
+  if (subtype != "PanCan") {
+    # Find samples for the subtype
+    subtype_samples <- metastatic_samples[which(metastatic_samples$SUBTYPE == subtype), ]
+
+    # Repeat for FGA and TMB
+    for (genomic_feature in unlist(measure_columns)) {
+
+      # Perform power transformations of FGA / TMB with Tukey's ladder of powers
+      tukey_features <- transformTukey(subtype_samples[[genomic_feature]],
+                                       plotit = FALSE, quiet = TRUE)
+      # Normalise between 0 to 1 by subtracting the minimum and dividing by the maximum
+      normalised_features <- tukey_features - min(tukey_features)
+      normalised_features <- normalised_features / max(normalised_features)
+
+      # Add the normalised feature to the subtype data
+      if (genomic_feature == measure_columns[["fga"]]) {
+        norm_column <- "NORM_FGA"
+      } else {
+        norm_column <- "NORM_TMB"
+      }
+      subtype_samples[norm_column] <- normalised_features
+
+      # Run linear regression of metastatic burden with FGA/TMB as the predictive variable
+      # and adjust for sample type
+      regression_results <- lm(as.formula(paste("MET_SITE_COUNT ~ SAMPLE_TYPE +", norm_column)),
+                               data = subtype_samples)
+      # Get the p-value for the FGA/TMB coefficient and check if significant
+      regression_coefficients <- data.frame(summary(regression_results)$coefficients)
+      coefficient_p_value <- regression_coefficients[norm_column,]$Pr...t..
+      regression_significant <- coefficient_p_value < 0.05
+
+      if (genomic_feature == measure_columns[["fga"]]) {
+        spearmans_df[r,]$FGA.SIGNIFICANT <- spearmans_df[r,]$FGA.SIGNIFICANT & regression_significant
+      } else {
+        spearmans_df[r,]$TMB.SIGNIFICANT <- spearmans_df[r,]$TMB.SIGNIFICANT & regression_significant
+      }
+    }
+  }
+  
+  # Set the row for the subtype
   subtype_row <- spearmans_df[r,]
   
+  # Set colours for significant values
   if (subtype_row$FGA.SIGNIFICANT) {
     spearmans_df[r,]$FGA.COLOUR <- subtype_row$COLOUR
   }
