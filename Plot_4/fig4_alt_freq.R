@@ -129,23 +129,22 @@ for (i in 1:nrow(figure4_plot_info_sorted)){
   }
 }
 figure4_plot_info_sorted$TO_color=TO_color
+figure4_plot_info_sorted$alt_TO=paste(figure4_plot_info_sorted$alternation,'     ',figure4_plot_info_sorted$TO)
+figure4_plot_info_sorted$alt_TO
+
 #update sorted file(with generated color for each TO)
 write.csv(figure4_plot_info_sorted, file = "Plot_4/figure4_plot_info_sorted.csv",row.names = FALSE)
-
+## plot for lung adeno
 figure4_plot_info_sorted %>% filter(bg_color=='#b368d9') %>%  
-  mutate(plotdata=paste0(seq_along(alternation),alternation)) %>%
+  mutate(plotdata=alt_TO) %>%
   ggplot(aes(x=alternation_freq1*100,y=plotdata,xmin=alternation_freq1,xmax=alternation_freq2,color=factor(triangle_color)))+
   geom_point(aes(x=alternation_freq1*100,y=plotdata),size=4,shape=20)+
   geom_text(aes(label=round(alternation_freq1,2)*100),hjust=-1,vjust=0.5)+
   geom_point(aes(x=alternation_freq2*100,y=plotdata),size=5,shape=20)+
   theme(panel.background = element_rect(fill = alpha('#b368d9',0.5), color = '#b368d9'))+
-  scale_x_continuous(position='top',limits = c(0, 100))
-?geom_point
- 
-  
+  scale_x_continuous(position='top',limits = c(0, 100))+
+  xlab(label='alternation frequency')+
+  ylab(label='alternation')+
+  scale_colour_identity()
 
-figure4_plot_info_sorted %>%
-  mutate(plotdata=paste0(seq_along(alternation),alternation)) %>%
-  ggplot(aes(x=rep(100,length(alternation)),y=plotdata))+
-  scale_x_continuous(limits = c(0, 100))
-0
+
