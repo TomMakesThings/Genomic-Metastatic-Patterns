@@ -1,4 +1,5 @@
 library(stringr)
+library(reshape)
 library(brglm)
 
 # Open calculated TMB and FGA data
@@ -23,9 +24,6 @@ all_subtypes <- unique(subtype_mean_cna$SUBTYPE)
 
 # Create dataframe of amplification and deletion fractions per subtype
 subtype_fraction_alteration <- data.frame()
-
-subtype <- "Pancreatic Adenocarcinoma"
-arm_id <- "X12p"
 
 for (subtype in all_subtypes) {
   # Find primary and metastasis samples for each subtype
@@ -56,9 +54,6 @@ for (subtype in all_subtypes) {
     alt_frequencies[["Loss"]][["Metastasis"]][arm_id] <- metastasis_del_frequency
   }
   
-  # Get columns for the sample ID, subtype and other info
-  annotation_columns <- subtype_call_rows[1, c("SAMPLE_ID", "SUBTYPE")]
-  
   # Iterate through alteration type, i.e. gain and loss
   for (alt_type in names(alt_frequencies)) {
     # Iterate through primary and metastasis sample types
@@ -69,7 +64,7 @@ for (subtype in all_subtypes) {
       fraction_alt_row[is.na(fraction_alt_row)] <- 0
       
       # Add subtype annotation columns
-      fraction_alt_row <- cbind(annotation_columns,
+      fraction_alt_row <- cbind(data.frame(SUBTYPE = subtype_call_rows[1,]$SUBTYPE),
                                 data.frame(SAMPLE_TYPE = sample_type, ALTERATION = alt_type),
                                 fraction_alt_row)
       # Record in main dataframe
@@ -78,9 +73,11 @@ for (subtype in all_subtypes) {
   }
 }
 
-# Save to file
-write.csv(subtype_fraction_alteration, "Plot_2/Figure2B/subtype_arm_level_fraction_alteration.csv", row.names = FALSE)
+# Save frequency of arm-level copy number alterations between primary tumors and metastases
+write.csv(subtype_fraction_alteration, "Plot_2/Figure2B/subtype_arm_level_fraction_alteration.csv",
+          row.names = FALSE)
 
+# Normalise a dataframe column between 0 - 1
 normaliseColumn <-function(col_values) {
   x <- col_values[!is.na(col_values)]
   x <- (x - min(x)) / (max(x) - min(x))
@@ -89,23 +86,26 @@ normaliseColumn <-function(col_values) {
   return(col_values)
 }
 
-for (subtype in all_subtypes) {
-  subtype = "Colorectal MSS"
-  # Get samples for the subtype
-  subtype_samples <- cna_data[which(cna_data$SUBTYPE == subtype), ]
-  
-  # Find primary and metastatic samples for the subtype
-  # primary_samples <- subtype_samples[which(subtype_samples$SAMPLE_TYPE == "Primary"),]
-  # metastatic_samples <- subtype_samples[which(subtype_samples$SAMPLE_TYPE == "Metastasis"),]
-  
-  subtype_cnas <- data.frame(t(subtype_samples[chromosome_cols]))
-  colnames(subtype_cnas) <- c("PRIMARY", "METASTASIS")
-  
-  normalised_cnas <- data.frame(apply(subtype_cnas[, c("PRIMARY", "METASTASIS")], 2, normaliseColumn))
-  
-  regression_results <- brglm(PRIMARY ~ METASTASIS, data = normalised_cnas)
-  regression_coefficients <- data.frame(coef(summary(regression_results)))
-  regression_coefficients["METASTASIS",]$Pr...z.. < 0.05
-}
+# Split by primary and metastatic samples
+primary_fractions <- subtype_fraction_alteration[which(subtype_fraction_alteration$SAMPLE_TYPE == "Primary"), ]
+metastasis_fractions <- subtype_fraction_alteration[which(subtype_fraction_alteration$SAMPLE_TYPE == "Metastasis"), ]
 
-brglm(X10p ~ X10q, data = subtype_samples)
+# Melt data so each gain/loss fraction is on a new row
+primary_alt_frac_melt <- melt(primary_fractions, id = setdiff(names(primary_fractions), chromosome_cols))
+names(primary_alt_frac_melt)[names(primary_alt_frac_melt) == "variable"] <- "ARM_ID"
+names(primary_alt_frac_melt)[names(primary_alt_frac_melt) == "value"] <- "PRIMARY_FRACTION"
+
+metastasis_fractions <- melt(metastasis_fractions, id = setdiff(names(metastasis_fractions), chromosome_cols))
+names(metastasis_fractions)[names(metastasis_fractions) == "variable"] <- "ARM_ID"
+names(metastasis_fractions)[names(metastasis_fractions) == "value"] <- "METASTASIS_FRACTION"
+
+# Combine melted data
+alt_frac_melt <- primary_alt_frac_melt[c("SUBTYPE", "ARM_ID", "PRIMARY_FRACTION")]
+alt_frac_melt$PRIMARY_FRACTION <- primary_alt_frac_melt$PRIMARY_FRACTION / 100
+alt_frac_melt$METASTASIS_FRACTION <- metastasis_fractions$METASTASIS_FRACTION / 100
+
+lung_frac <- alt_frac_melt[which(alt_frac_melt$SUBTYPE == "Lung Adenocarcinoma"), ]
+
+regression_results <- brglm(METASTASIS_FRACTION ~ PRIMARY_FRACTION + ARM_ID, data = lung_frac)
+regression_coefficients <- data.frame(coef(summary(regression_results)))
+regression_coefficients["METASTASIS",]$Pr...z.. < 0.05
