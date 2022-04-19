@@ -1,3 +1,5 @@
+library(stringr)
+
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
 
 # Run ASCETS, the arm-level copy number events caller for targeted sequencing data
@@ -70,22 +72,32 @@ for (sample in autosomal_calls$sample) {
 }
 
 # Combine data to add labels to CNA results
-arm_level_df <- samples_data
-arm_level_df$ANEUPLOIDY_SCORE <- aneuploidy_score$aneuploidy_score
+cna_annotation <- samples_data
+cna_annotation$ANEUPLOIDY_SCORE <- aneuploidy_score$aneuploidy_score
 # Record estimated WGD
-arm_level_df$ARM_WGD <- amp_frequency
-arm_level_df <- merge(arm_level_df, average_segmeans,
-                      by.x = "SAMPLE_ID", by.y = "sample")
+cna_annotation$ARM_WGD <- amp_frequency
+
+# Add sample information to arm-level calls data, then to weighted average segment means data
+arm_level_calls <- merge(cna_annotation, arm_level_calls,
+                         by.x = "SAMPLE_ID", by.y = "sample")
+sample_cna_df <- merge(cna_annotation, average_segmeans,
+                       by.x = "SAMPLE_ID", by.y = "sample")
 
 # Get list of subtypes
-all_subtypes <- unique(arm_level_df$SUBTYPE)
-subtype_cna_df <- data.frame()
+all_subtypes <- unique(sample_cna_df$SUBTYPE)
+
+# Populate data of average per subtype of weighted average segment means
+subtype_mean_cna_df <- data.frame()
 
 for (subtype in all_subtypes) {
   # Find primary and metastasis samples for each subtype
-  subtype_rows <- arm_level_df[which(arm_level_df$SUBTYPE == subtype), ]
-  primary_subtype <- subtype_rows[which(subtype_rows$SAMPLE_TYPE == "Primary"), ]
-  metastasis_subtype <- subtype_rows[which(subtype_rows$SAMPLE_TYPE == "Metastasis"), ]
+  subtype_weighted_rows <- sample_cna_df[which(sample_cna_df$SUBTYPE == subtype), ]
+  primary_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Primary"), ]
+  metastasis_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Find primary and metastasis samples for each subtype
+  primary_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Primary"), ]
+  metastasis_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Metastasis"), ]
   
   # Calculate average for all numeric columns
   primary_means <- colMeans(primary_subtype[sapply(primary_subtype, is.numeric)])
@@ -95,13 +107,14 @@ for (subtype in all_subtypes) {
   primary_means_df <- cbind(data.frame(SUBTYPE = subtype, SAMPLE_TYPE = "Primary"),
                             data.frame(t(primary_means)))
   metastasis_means_df <- cbind(data.frame(SUBTYPE = subtype, SAMPLE_TYPE = "Metastasis"),
-                            data.frame(t(metastasis_means)))
+                               data.frame(t(metastasis_means)))
   
   # Add averages to subtype CNA dataframe
-  subtype_cna_df <- rbind(subtype_cna_df, primary_means_df)
-  subtype_cna_df <- rbind(subtype_cna_df, metastasis_means_df)
+  subtype_mean_cna_df <- rbind(subtype_mean_cna_df, primary_means_df)
+  subtype_mean_cna_df <- rbind(subtype_mean_cna_df, metastasis_means_df)
 }
 
 # Save to file
-write.csv(arm_level_df, "Plot_2/aSCNAs/sample_arm_level_cna.csv", row.names = FALSE)
-write.csv(subtype_cna_df, "Plot_2/aSCNAs/subtype_arm_level_cna.csv", row.names = FALSE)
+write.csv(sample_cna_df, "Plot_2/aSCNAs/sample_arm_level_cna.csv", row.names = FALSE)
+write.csv(subtype_mean_cna_df, "Plot_2/aSCNAs/subtype_mean_arm_level_cna.csv", row.names = FALSE)
+write.csv(arm_level_calls, "Plot_2/aSCNAs/sample_arm_level_calls.csv", row.names = FALSE)
