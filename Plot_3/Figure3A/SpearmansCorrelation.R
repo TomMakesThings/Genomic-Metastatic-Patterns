@@ -99,7 +99,7 @@ for (r in row.names(significant_subtypes_df)) {
   
   if (subtype != "PanCan") {
     # Find samples for the subtype
-    subtype_samples <- metastatic_samples[which(metastatic_samples$SUBTYPE == subtype), ]
+    subtype_samples <- samples_data[which(samples_data$SUBTYPE == subtype), ]
 
     # Repeat for FGA and TMB
     for (genomic_feature in unlist(measure_columns)) {
@@ -118,7 +118,7 @@ for (r in row.names(significant_subtypes_df)) {
         norm_column <- "NORM_TMB"
       }
       subtype_samples[norm_column] <- normalised_features
-
+    
       # Run linear regression of metastatic burden with FGA/TMB as the predictive variable
       # and adjust for sample type
       regression_results <- lm(as.formula(paste("MET_SITE_COUNT ~ SAMPLE_TYPE +", norm_column)),
@@ -129,8 +129,6 @@ for (r in row.names(significant_subtypes_df)) {
       regression_significant <- coefficient_p_value < 0.05
 
       if (genomic_feature == measure_columns[["fga"]]) {
-        if (subtype == "Sarcoma Lipo") {
-        }
         spearmans_df[r,]$FGA.SIGNIFICANT <- spearmans_df[r,]$FGA.SIGNIFICANT & regression_significant
       } else {
         spearmans_df[r,]$TMB.SIGNIFICANT <- spearmans_df[r,]$TMB.SIGNIFICANT & regression_significant
@@ -172,19 +170,28 @@ spearman_plot_data$subtype <- factor(spearman_plot_data$subtype,
                                                     ")", sep = "")))
 
 # Plot point range with spearman's rho
-pdf(file = "Plot_3/Figure3A/Figure_3A.pdf", width = 4, height = 4)
+pdf(file = "Plot_3/Figure3A/Figure_3A.pdf", width = 7, height = 10)
 ggplot(spearman_plot_data, aes(x = subtype, y = rho, group = type, 
                                ymin = conf_lower, ymax = conf_upper, # Confidence interval
                                color = factor(row.names(spearman_plot_data), # Set as factor so order is the same
                                               levels = row.names(spearman_plot_data)),
                                shape = type)) +
+  geom_hline(yintercept = 0, color = "white", size = 1) + # Set line through y-axis center
   geom_pointrange(position = position_dodge(width = -1)) + # Add space between grouped points
-  coord_flip() +
-  labs(title = "Spearman's correlation", x = "", y = "") +
-  scale_y_continuous(position = "right", limits = c(-0.6, 0.6)) +
-  theme(axis.text.y = element_text(hjust = 1, colour = rev(spearmans_df$COLOUR)), # Colour labels
-        legend.position = "bottom") + 
-  scale_color_manual(values = c(spearmans_df$FGA.COLOUR, spearmans_df$TMB.COLOUR),
-                     guide ='none') + # Colour points
-  scale_shape_manual(name = "", values = c(16, 18))
+  coord_flip() + # Show spearman's rho on x-axis and subtype on y-axis
+  labs(title = "Spearman's correlation", x = "", y = "",
+       caption = expression("" %<-% "Lower with increasing metastatic burden      Higher with increasing metastatic burden" %->% "")) +
+  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = -1), # Set title position
+        plot.caption.position = "plot", # Set caption position and size
+        plot.caption = element_text(hjust = 1, size = 8),
+        axis.text.y = element_text(hjust = 1, colour = rev(spearmans_df$COLOUR)), # Colour labels
+        legend.position = "bottom",
+        panel.grid.major.x = element_blank(), # Hide x-axis background grid lines
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(linetype = "dotted", size = 0.8), # Set style of y-axis background grid lines
+        panel.grid.minor.y = element_line(linetype = "dotted", size = 0.8)) + 
+  scale_y_continuous(position = "right", limits = c(-0.6, 0.6)) + # Set y-axis limits
+  scale_color_manual(values = c(spearmans_df$FGA.COLOUR, spearmans_df$TMB.COLOUR), # Colour points
+                     guide ='none') +
+  scale_shape_manual(name = "", values = c(16, 18)) # Set FGA and TMB point shapes
 dev.off()
