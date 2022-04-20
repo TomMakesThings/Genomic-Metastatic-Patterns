@@ -1,9 +1,14 @@
 # OncoKB Annotator
 This code is downloaded from [oncokb/oncokb-annotator](https://github.com/oncokb/oncokb-annotator) to perform annotation of somatic alterations using OncoKB. More detail on running `MafAnnotator.py` can be found [here](https://api.oncokb.org/oncokb-annotator/gene-annotation).
 
+#### To run code on anaconda:
+`conda create -n oncokb python=3.8`
+
 `conda activate oncokb`
 
 `cd C:\Users\redds\Documents\GitHub\Genomics-II-Group`
+
+`pip install -r requirements/common.txt -r requirements/pip3.txt`
 
 `python OncoKB_Annotator\MafAnnotator.py -h`
 
