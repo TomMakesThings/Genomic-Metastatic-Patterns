@@ -1,6 +1,7 @@
 library(readxl)
 library(ggplot2)
 library(stringr)
+library(ggpubr)
 
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
 
@@ -81,6 +82,7 @@ for (tumour in tumour_types) {
     # Append a row to the alteration dataframe
     alteration_plot_df <- rbind(alteration_plot_df,
                                 data.frame(tumour_type = tumour_display_name,
+                                           primary_n = tumour_alts$primary_n[1],
                                            alteration_name = alt_name,
                                            alteration_type = alt_type,
                                            alternation_freq1 = min(primary_freq, metastasis_freq),
@@ -100,50 +102,69 @@ alteration_plot_df <- transform(alteration_plot_df, freq = ave(seq(nrow(alterati
 alteration_plot_df <- alteration_plot_df[order(-alteration_plot_df$freq), ]
 alteration_plot_df$freq <- NULL
 
+# Capitalise first letter of each alteration type, e.g. "deletion" -> "Deletion"
+alteration_plot_df$alteration_type <- str_to_title(alteration_plot_df$alteration_type)
+# Replace "Mut" with "Mutation"
+alteration_plot_df$alteration_type <- str_replace_all(alteration_plot_df$alteration_type,
+                                                      "Mut", "Mutation")
+
 # Save plot data to file
 write.csv(alteration_plot_df, file = "Plot_2/Figure2C/figure2c_plot_info.csv", row.names = FALSE)
 
+# Set list of formal tumour names
+all_tumour_names <- unique(alteration_plot_df$tumour_type)
 
-for (tumour in unique(alteration_plot_df$tumour_type)) {
-  tumour_alts <- alteration_plot_df[which(alteration_plot_df$tumour_type == tumour),]
+tumour_alt_plots <- list()
+
+for (tumour_name in all_tumour_names) {
+  tumour_alts <- alteration_plot_df[which(alteration_plot_df$tumour_type == tumour_name),]
   tumour_alts$triangle_color <- factor(tumour_alts$triangle_color,
                                           levels = unique(tumour_alts$triangle_color))
-  tumour_alts$alteration_type  <- factor(tumour_alts$alteration_type ,
+  tumour_alts$alteration_type  <- factor(tumour_alts$alteration_type,
                                          levels = unique(tumour_alts$alteration_type))
+  tumour_alts$higher_in_metastasis  <- factor(tumour_alts$higher_in_metastasis,
+                                         levels = unique(tumour_alts$higher_in_metastasis))
   
   if (tumour_alts$higher_in_metastasis[1]) {
-    # Set left and right facing triangles
-    triangle_shapes <- c("\u25BA", "\u25C4")
-  } else {
     # Set right and left facing triangles
     triangle_shapes <- c("\u25C4", "\u25BA")
+    triangle_direction <- c("Higher in\nmetastasis", "Lower in\nMetastasis")
+  } else {
+    # Set left and right facing triangles
+    triangle_shapes <- c("\u25BA", "\u25C4")
+    triangle_direction <- c("Higher in metastasis", "Lower in Metastasis")
   }
   
-  ggplot(data = tumour_alts,
-         aes(x = alternation_freq1 * 100, y = alteration_name,
-             xmin = alternation_freq1, xmax = alternation_freq2,
-             color = alteration_type, shape = higher_in_metastasis)) +
+  alt_plot <- ggplot(data = tumour_alts,
+                     aes(x = alternation_freq1 * 100, y = alteration_name,
+                         xmin = alternation_freq1, xmax = alternation_freq2,
+                         color = alteration_type, shape = higher_in_metastasis)) +
     geom_point(size = 6) +
     geom_text(aes(label = round(alternation_freq1, 2) * 100), # Add text to left and right of arrows
               color = "black", hjust = 3, vjust = 0.5) +
     geom_text(aes(label = round(alternation_freq2, 2) * 100), 
               color = "black", hjust = -3, vjust = 0.5) +
-    scale_shape_manual(values = triangle_shapes) + # Set triangle shapes
+    scale_shape_manual(values = triangle_shapes, # Set triangle shapes
+                       labels = triangle_direction) +
+    scale_color_manual(values = as.vector(unique(tumour_alts$triangle_color))) +
     scale_x_continuous(position = 'top', limits = c(0, 100)) +
-    labs(title = tumour_alts$tumour_type, x = 'Alternation frequency', y = '') +
-    theme(plot.title = element_text(size = 15, color = tumour_alts$bg_color),
+    labs(title = paste(tumour_alts$tumour_type[1], " (", tumour_alts$primary_n[1], ")", sep = ""), 
+         x = 'Alternation frequency', y = '') +
+    theme(plot.title = element_text(size = 12, color = tumour_alts$bg_color),
           panel.background = element_rect(fill = alpha(tumour_alts$bg_color, 0.5), # Set background colour
                                           color = tumour_alts$bg_color),
           panel.grid.major.x = element_blank(), # Hide x-axis background grid lines
           panel.grid.minor.x = element_blank(),
           panel.grid.major.y = element_line(linetype = "dotted", size = 0.7), # Set style of y-axis background grid lines
           panel.grid.minor.y = element_line(linetype = "dotted", size = 0.7)) +
-    scale_color_manual(values = as.vector(unique(tumour_alts$triangle_color))) +
-    guides(color = guide_legend(title = "Alteration Type"),
-           shape = guide_legend(title = "Direction"))
+    guides(color = guide_legend(title = ""),
+           shape = guide_legend(title = ""))
+  
+  tumour_alt_plots[[tumour_name]] <- alt_plot
 }
 
-
+ggarrange(plotlist = tumour_alt_plots, heights = c(4,3,2,2), 
+          common.legend = TRUE, legend = "bottom")
 
 # tumour_types <- c("lung_adenocarcinoma", "prostate_adenocarcinoma",
 #                   "IDC_HR+HER2-", "colorectal_cancer_mss", "ILC_HR+HER2-",
