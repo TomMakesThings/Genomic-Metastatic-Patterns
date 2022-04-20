@@ -1,3 +1,15 @@
+# OncoKB Annotator
+This code is downloaded from [oncokb/oncokb-annotator](https://github.com/oncokb/oncokb-annotator) to perform annotation of somatic alterations using OncoKB.
+
+`conda activate oncokb`
+
+`cd C:\Users\redds\Documents\GitHub\Genomics-II-Group`
+
+`python OncoKB_Annotator\MafAnnotator.py -h`
+
+`python OncoKB_Annotator\MafAnnotator.py -i Data\data_mutations.txt -o ${OUTPUT_FILE} -b ${ONCOKB_API_TOKEN}`
+
+# Repositoy README
 
 ## UPDATE: We now include Diagnostic Implications and Prognostic Implications during the annotation process
 ## UPDATE: API token required, please see [OncoKB API section](#oncokb-api) for more information
