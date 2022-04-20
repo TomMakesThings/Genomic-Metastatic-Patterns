@@ -106,6 +106,10 @@ alt_frac_melt$METASTASIS_FRACTION <- metastasis_fractions$METASTASIS_FRACTION / 
 
 lung_frac <- alt_frac_melt[which(alt_frac_melt$SUBTYPE == "Lung Adenocarcinoma"), ]
 
-regression_results <- brglm(METASTASIS_FRACTION ~ PRIMARY_FRACTION + ARM_ID, data = lung_frac)
-regression_coefficients <- data.frame(coef(summary(regression_results)))
-regression_coefficients["METASTASIS",]$Pr...z.. < 0.05
+# Fit the logistic regression model
+fitted_model <- brglm(METASTASIS_FRACTION ~ PRIMARY_FRACTION, 
+                      family = binomial(), data = lung_frac)
+regression_coefficients <- data.frame(coef(summary(fitted_model)))
+regression_coefficients["PRIMARY_FRACTION",]$Pr...z.. < 0.05
+
+predict(fitted_model, type = "response") < 0.05
