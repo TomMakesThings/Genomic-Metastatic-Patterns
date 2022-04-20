@@ -114,10 +114,16 @@ write.csv(alteration_plot_df, file = "Plot_2/Figure2C/figure2c_plot_info.csv", r
 # Set list of formal tumour names
 all_tumour_names <- unique(alteration_plot_df$tumour_type)
 
+# Record each plot in a list
 tumour_alt_plots <- list()
 
-for (tumour_name in all_tumour_names) {
+for (i in 1:length(all_tumour_names)) {
+  # Get the name as an index
+  tumour_name <- all_tumour_names[i]
+  
+  # Find the rows for the tumour type
   tumour_alts <- alteration_plot_df[which(alteration_plot_df$tumour_type == tumour_name),]
+  # Convert columns to factors to keep order
   tumour_alts$triangle_color <- factor(tumour_alts$triangle_color,
                                           levels = unique(tumour_alts$triangle_color))
   tumour_alts$alteration_type  <- factor(tumour_alts$alteration_type,
@@ -135,21 +141,25 @@ for (tumour_name in all_tumour_names) {
     triangle_direction <- c("Higher in metastasis", "Lower in Metastasis")
   }
   
+  # Create the plot of alteration frequency for the tumour type
   alt_plot <- ggplot(data = tumour_alts,
-                     aes(x = alternation_freq1 * 100, y = alteration_name,
+                     aes(x = alternation_freq1 * 100,
+                         y = alteration_name,
                          xmin = alternation_freq1, xmax = alternation_freq2,
                          color = alteration_type, shape = higher_in_metastasis)) +
     geom_point(size = 6) +
     geom_text(aes(label = round(alternation_freq1, 2) * 100), # Add text to left and right of arrows
-              color = "black", hjust = 3, vjust = 0.5) +
+              color = "black", size = 3, hjust = 3, vjust = 0.5) +
     geom_text(aes(label = round(alternation_freq2, 2) * 100), 
-              color = "black", hjust = -3, vjust = 0.5) +
+              color = "black", size = 3, hjust = -3, vjust = 0.5) +
     scale_shape_manual(values = triangle_shapes, # Set triangle shapes
                        labels = triangle_direction) +
     scale_color_manual(values = as.vector(unique(tumour_alts$triangle_color))) +
-    scale_x_continuous(position = 'top', limits = c(0, 100)) +
+    scale_x_continuous(position = 'top', limits = c(0, 100),
+                       expand = c(0.1, 0.1), labels = function(x) paste0(x, "%")) +
+    scale_y_discrete(labels = tumour_alts$alteration_name) + # Set the y-axis labels as alteration names
     labs(title = paste(tumour_alts$tumour_type[1], " (", tumour_alts$primary_n[1], ")", sep = ""), 
-         x = 'Alternation frequency', y = '') +
+         x = "Alternation frequency", y = "") +
     theme(plot.title = element_text(size = 12, color = tumour_alts$bg_color),
           panel.background = element_rect(fill = alpha(tumour_alts$bg_color, 0.5), # Set background colour
                                           color = tumour_alts$bg_color),
@@ -159,34 +169,11 @@ for (tumour_name in all_tumour_names) {
           panel.grid.minor.y = element_line(linetype = "dotted", size = 0.7)) +
     guides(color = guide_legend(title = ""),
            shape = guide_legend(title = ""))
-  
+  alt_plot
   tumour_alt_plots[[tumour_name]] <- alt_plot
 }
 
-ggarrange(plotlist = tumour_alt_plots, heights = c(4,3,2,2), 
+cairo_pdf("Plot_2/Figure2C/Figure2C.pdf", width = 14, height = 12)
+ggarrange(plotlist = tumour_alt_plots, heights = c(4,2.5,1.5,1.5), 
           common.legend = TRUE, legend = "bottom")
-
-# tumour_types <- c("lung_adenocarcinoma", "prostate_adenocarcinoma",
-#                   "IDC_HR+HER2-", "colorectal_cancer_mss", "ILC_HR+HER2-",
-#                   "pancreatic_adenocarcinoma", "pancreatic_neuroendocrine",
-#                   "uterine_endometrioid", "gastrointestinal_stromal_tumor",
-#                   "head_and_neck_squamous", "uterine_hypermutant",
-#                   "lung_squamous_cell_carcinoma", "renal_clear_cell",
-#                   "melanoma_cutaneous", "thyroid_papillary",
-#                   "esophageal_adenocarcinoma")
-
-# for (tumour_type in all_tumour_types) {
-#   # Get samples for the subtype
-#   tumour_rows <- recurrent_alterations[which(recurrent_alterations$tumor_type == tumour_type), ]
-# 
-#   # Mann-Whitney U test to compare alteration frequencies between primary and metastatic samples
-#   man_whitney_results <- wilcox.test(c(0.06153846, 0.0438))
-#   tumour_pvalues <- c(tumour_pvalues, man_whitney_results$p.value)
-# }
-# 
-# # Convert from p-values to q-values and return which subtypes are significant
-# findSigniciant <- function(pvalues, subtype_list, threshold) {
-#   qvalues <- p.adjust(tmb_high_pvalues, method = "fdr")
-#   
-#   return(qvalues < threshold)
-# }
+graphics.off()
