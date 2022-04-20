@@ -126,6 +126,8 @@ for (i in 1:length(all_tumour_names)) {
   # Convert columns to factors to keep order
   tumour_alts$triangle_color <- factor(tumour_alts$triangle_color,
                                           levels = unique(tumour_alts$triangle_color))
+  tumour_alts$alteration_name  <- factor(tumour_alts$alteration_name,
+                                         levels = unique(tumour_alts$alteration_name))
   tumour_alts$alteration_type  <- factor(tumour_alts$alteration_type,
                                          levels = unique(tumour_alts$alteration_type))
   tumour_alts$higher_in_metastasis  <- factor(tumour_alts$higher_in_metastasis,
@@ -157,7 +159,6 @@ for (i in 1:length(all_tumour_names)) {
     scale_color_manual(values = as.vector(unique(tumour_alts$triangle_color))) +
     scale_x_continuous(position = 'top', limits = c(0, 100),
                        expand = c(0.1, 0.1), labels = function(x) paste0(x, "%")) +
-    scale_y_discrete(labels = tumour_alts$alteration_name) + # Set the y-axis labels as alteration names
     labs(title = paste(tumour_alts$tumour_type[1], " (", tumour_alts$primary_n[1], ")", sep = ""), 
          x = "Alternation frequency", y = "") +
     theme(plot.title = element_text(size = 12, color = tumour_alts$bg_color),
