@@ -1,3 +1,6 @@
+# OncoKB Actionability Scores
+First OncoTree codes were mapped to mutations in the MAF mutation file [Data/data_mutations.txt](https://github.com/TomMakesThings/Genomics-II-Group/blob/main/Data/data_mutations.txt) to create [mutations_with_oncotree_codes.txt](https://github.com/TomMakesThings/Genomics-II-Group/blob/main/Plot_2/OncoKB/mutations_with_oncotree_codes.txt). Then mutations in this file were annotated with actionability scores using OncoKB Annotator. The annotated results are saved in [oncokb_annotated_mutations.zip](https://github.com/TomMakesThings/Genomics-II-Group/blob/main/Plot_2/OncoKB/oncokb_annotated_mutations.zip). For information about the added columns, [click here](https://github.com/TomMakesThings/Genomics-II-Group/tree/main/OncoKB_Annotator#columns-added-in-the-annotation-files).
+
 #### To run OncoKB code on anaconda:
 
 Create conda environment:
