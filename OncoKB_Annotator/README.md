@@ -12,7 +12,7 @@ This code is downloaded from [oncokb/oncokb-annotator](https://github.com/oncokb
 
 `python OncoKB_Annotator\MafAnnotator.py -h`
 
-`python OncoKB_Annotator\MafAnnotator.py -i Data\data_mutations.txt -o ${OUTPUT_FILE} -b ${ONCOKB_API_TOKEN}`
+`python OncoKB_Annotator\MafAnnotator.py -i Plot_2\OncoKB\mutations_with_oncotree_codes.txt -o Plot_2\OncoKB\oncokb_annotated_mutations.txt -b 44ceacf7-c7d2-4b85-ae72-e7ef71c0da55`
 
 # Repositoy README
 
