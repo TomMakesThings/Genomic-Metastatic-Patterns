@@ -6,3 +6,6 @@ The fraction of samples per subtype for primary and metastatic samples with a tu
 
 # Arm-level CNAs
 The frequency of arm-level copy number alterations between primary and metastatic tumors was calculated as the fraction of AMP / DEL per chromsome arm, e.g. 12p, predicted by ASCETS. This is saved in `subtype_arm_level_fraction_alteration.csv` and is required for the heatmap in plot 2B.
+
+# FGA and TMB
+Our calculated values are found [here](https://github.com/TomMakesThings/Genomics-II-Group/blob/main/Plot_2/FGA/calculated_TMB_and_FGA.csv).
