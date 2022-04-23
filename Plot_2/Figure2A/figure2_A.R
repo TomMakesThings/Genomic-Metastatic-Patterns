@@ -8,6 +8,12 @@ tableS2A<-data.frame(tableS2A)
 tableS1A<-read_excel("Tables_S1-4/Table_S1.xlsx",skip = 1)
 tableS1A<-data.frame(tableS1A)
 
+
+
+
+#
+significant_info<-read.csv(file = "Plot_2/Figure2B/significant_subtypes.csv",
+                           header = TRUE, fill = TRUE)
 #our calculated fga and tmb
 calculated_fga_tmb<-read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                              header = TRUE, fill = TRUE)
@@ -30,7 +36,7 @@ for (i in 1:length(subtypes)){
   fga_p_median<-c(fga_p_median,get_median_fga(subtypes[i],0))
   fga_m_median<-c(fga_m_median,get_median_fga(subtypes[i],1))
 }
-fga_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=fga_p_median,m_median=fga_m_median)
+fga_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=fga_p_median,m_median=fga_m_median,sig=significant_info$FGA_SIGNIFICANT)
 
 # get median of tmb
 get_median_tmb<-function(subtype,sample_type){
@@ -46,11 +52,10 @@ tmb_p_median<-c()
 tmb_m_median<-c()
 for (i in 1:length(subtypes)){
   tmb_p_median<-c(tmb_p_median,get_median_tmb(subtypes[i],0))
-  tmb_m_median<-c(tmb_m_median,get_median_(subtypes[i],1))
+  tmb_m_median<-c(tmb_m_median,get_median_tmb(subtypes[i],1))
 }
 
-tmb_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=tmb_p_median,m_median=tmb_m_median)
-
+tmb_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=tmb_p_median,m_median=tmb_m_median,sig=significant_info$TMB_SIGNIFICANT)
 
 
 
@@ -111,17 +116,15 @@ ggplot(data2,aes(primary_median,metastasis_median,label=tumor_type,color=factor(
 
 ###
 #plot figure2A_fga our result
-fga_data
-
 ggplot(fga_data,aes(p_median,m_median,label=subtypes,color=colour))+
   xlim(-0.02,0.52)+
   ylim(-0.02,0.52)+
   theme_minimal()+
   theme(legend.position = "none")+
-  geom_point(size=2)+
-  geom_point(data=fga_data,alpha=0.5,size=3,aes(color=colour))+
+  geom_point(size=4)+
+  geom_point(data=fga_data %>% filter(sig==TRUE),alpha=0.5,size=7,aes(color=colour))+
   #scale_color_manual(values=data2$colour)+
-  geom_text(data=fga_data,hjust=0.5,vjust=1.5)+
+  geom_text(data=fga_data  %>% filter(sig==TRUE),hjust=0.5,vjust=1.5)+
   geom_abline(slope=1,color='grey',size=1)+
   labs(y='Metastatsis median ',x='Primary median ',title = 'Fraction of genome altered',size=15)+
   theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
@@ -129,7 +132,34 @@ ggplot(fga_data,aes(p_median,m_median,label=subtypes,color=colour))+
 
 
 ###############################
-#plot figure 2A_wgd
+### our wgd
+cna_data <- read.csv(file = "Plot_2/aSCNAs/sample_arm_level_cna.csv",
+                     header = TRUE, fill = TRUE)
+score<-read.csv(file = "Plot_2/aSCNAs/ascets_results_aneuploidy_scores.txt",
+                header = TRUE, fill = TRUE,sep='\t')
+calculated_fga_tmb$wgd<-cna_data$ARM_WGD
+#calculated_fga_tmb$wgd<-score$aneuploidy_score
+
+get_median_wgd<-function(subtype,sample_type){
+  if (sample_type==0){
+    temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Primary')
+  }
+  if (sample_type==1){
+    temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Metastasis')
+  }
+  median=median(temp$wgd)
+}
+wgd_p_median<-c()
+wgd_m_median<-c()
+for (i in 1:length(subtypes)){
+  wgd_p_median<-c(wgd_p_median,get_median_wgd(subtypes[i],0))
+  wgd_m_median<-c(wgd_m_median,get_median_wgd(subtypes[i],1))
+}
+
+wgd_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=wgd_p_median,m_median=wgd_m_median,sig=significant_info$WGD_SIGNIFICANT)
+
+
+#plot figure 2A_wgd origin
 data_wgd<-tableS2A %>%  filter(alteration=='WGD')
 data_wgd=assign_color(data_wgd)
 data_wgd %>% filter(qval<0.05)
@@ -147,6 +177,30 @@ ggplot(data_wgd,aes(primary_pc,metastasis_pc,label=tumor_type,color=factor(colou
   labs(y='Metastatsis median ',x='Primary median ',title = 'Whole genome duplication',size=15)+
   theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
   scale_colour_identity()
+
+
+#plot figure 2A_wgd our result
+wgd_data=assign_col(wgd_data)
+wgd_data
+ggplot(wgd_data,aes(p_median,m_median,label=subtypes,color=colour))+
+  xlim(-0.02,0.3)+
+  ylim(-0.02,0.3)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=wgd_data %>% filter(sig==TRUE),alpha=0.5,size=7,aes(color=colour))+
+  geom_text(data=wgd_data %>% filter(sig==TRUE),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median ',x='Primary median ',title = 'Whole genome duplication',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+
+
+
+
+
+
+
 
 
 ###############################
@@ -170,16 +224,17 @@ ggplot(data_tmb,aes(primary_median,metastasis_median,label=tumor_type,color=colo
   scale_colour_identity()
 #plot figure 2A_tmb our result
 tmb_data=assign_col(tmb_data)
+tmb_data
 ggplot(tmb_data,aes(p_median,m_median,label=subtypes,color=colour))+
   xlim(-0.02,10)+
   ylim(-0.02,10)+
   theme_minimal()+
   theme(legend.position = "none")+
-  geom_point(size=2)+
-  geom_point(data=tmb_data,alpha=0.5,size=3,aes(color=colour))+
-  #scale_color_manual(values=data2$colour)+
-  geom_text(data=tmb_data,hjust=0.5,vjust=1.5)+
+  geom_point(size=4)+
+  geom_point(data=tmb_data %>% filter(sig==TRUE),alpha=0.5,size=7,aes(color=colour))+
+  geom_text(data=tmb_data %>% filter(sig==TRUE),hjust=0.5,vjust=1.5)+
   geom_abline(slope=1,color='grey',size=1)+
   labs(y='Metastatsis median ',x='Primary median ',title = 'Tumor mutational burden',size=15)+
   theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
   scale_colour_identity()
+
