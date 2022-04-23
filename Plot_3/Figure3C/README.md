@@ -1,4 +1,3 @@
 
-cna10.txt was downloaded from cBioPortal. 
+cna data and mutation data were downloaded from cBioPortal. 
 
-I wrote some comments at the end of R script.
