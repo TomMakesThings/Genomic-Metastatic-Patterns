@@ -11,6 +11,96 @@ table_s2a <- data.frame(read_excel("Tables_S1-4/Table_S2.xlsx", sheet = 1, skip 
 # Open calculated TMB and FGA data
 samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                          header = TRUE, fill = TRUE)
+# Open fusion data
+fusion_data <- read.delim(file = "Data/data_fusions.txt",
+                          header = TRUE, fill = TRUE, sep = "\t")
+# Open mutation data
+mutations <- read.delim(file = "Data/data_mutations.txt", 
+                        header = TRUE)
+
+# Drop columns to reduce size of data
+mutations <- mutations[c("Hugo_Symbol", "Variant_Type", "Tumor_Sample_Barcode")]
+
+# Create list of all subtypes
+all_subtypes <- unique(samples_data$SUBTYPE)
+
+primary_mutation_freq <- list()
+metastatic_mutation_freq <- list()
+primary_fusion_freq <- list()
+metastatic_fusion_freq <- list()
+
+for (subtype in all_subtypes) {
+  # Find all primary and metastatic samples for the subtype
+  subtype_samples <- samples_data[which(samples_data$SUBTYPE == subtype), ]
+  primary_samples <- subtype_samples[which(subtype_samples$SAMPLE_TYPE == "Primary"), ]
+  metastatic_samples <- subtype_samples[which(subtype_samples$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Get the IDs for subtype samples
+  primary_sample_ids <- primary_samples$SAMPLE_ID
+  metastatic_sample_ids <- metastatic_samples$SAMPLE_ID
+  
+  # Find the mutations in the primary and metastatic samples
+  primary_subtype_muts <- mutations[which(mutations$Tumor_Sample_Barcode %in% primary_sample_ids), ]
+  metastatic_subtype_muts <- mutations[which(mutations$Tumor_Sample_Barcode %in% primary_sample_ids), ]
+  
+  # Calculate fraction of mutated genes against all samples for the subtype
+  primary_mutation_freq[[subtype]] <- as.list(table(primary_subtype_muts$Hugo_Symbol) / length(primary_sample_ids))
+  metastatic_fusion_freq[[subtype]] <- as.list(table(metastatic_subtype_muts$Hugo_Symbol) / length(metastatic_sample_ids))
+  
+  # Find the fusions in the primary and metastatic samples
+  primary_subtype_fusions <- fusion_data[which(fusion_data$Tumor_Sample_Barcode %in% primary_sample_ids), ]
+  metastatic_subtype_fusions <- fusion_data[which(fusion_data$Tumor_Sample_Barcode %in% metastatic_sample_ids), ]
+  
+  # Find genes with fusions in primary samples but not metastatic
+  zero_primary_names <- setdiff(metastatic_subtype_fusions$Hugo_Symbol, primary_subtype_fusions$Hugo_Symbol)
+  # Find genes with fusions in metastatic samples but not primary
+  zero_metastatic_names <- setdiff(primary_subtype_fusions$Hugo_Symbol, metastatic_subtype_fusions$Hugo_Symbol)
+  
+  # Create placeholder lists for genes not found in either primary / metastatic samples
+  zero_primary_genes <- rep(0, length(zero_primary_names))
+  zero_metastatic_genes <- rep(0, length(zero_metastatic_names))
+  names(zero_primary_genes) <- zero_primary_names
+  names(zero_metastatic_genes) <- zero_metastatic_names
+  
+  # Calculate fraction of fusion genes against all samples for the subtype
+  primary_fusion_frequencies <- as.list(table(primary_subtype_fusions$Hugo_Symbol) / length(primary_sample_ids))
+  metastatic_fusion_frequencies <- as.list(table(metastatic_subtype_fusions$Hugo_Symbol) / length(metastatic_sample_ids))
+  
+  # Add genes not found in either primary / metastatic for comparision
+  primary_fusion_frequencies <- append(primary_fusion_frequencies, zero_primary_genes)
+  metastatic_fusion_frequencies <- append(metastatic_fusion_frequencies, zero_metastatic_genes)
+  
+  # Record the frequencies
+  primary_fusion_freq[[subtype]] <- primary_fusion_frequencies
+  metastatic_fusion_freq[[subtype]] <- metastatic_fusion_frequencies
+}
+
+# Combine fusion data per subtype into a dataframe
+mutation_df <- data.frame()
+fusion_df <- data.frame()
+
+for (subtype in all_subtypes) {
+  # Get the alterative subtype name
+  display_name <- table_s1a[which(table_s1a$curated_subtype_display == subtype), ][[1]]
+  
+  # Add mutation frequencies for each subtype
+  mutation_df <- rbind(mutation_df,
+                       data.frame(subtype = subtype,
+                                  subtype_display = display_name,
+                                  alteration = paste0(names(primary_fusion_freq[[subtype]]), "_mutation"),
+                                  primary_freq = unlist(primary_fusion_freq[[subtype]]),
+                                  metastatic_freq = unlist(metastatic_fusion_freq[[subtype]])))
+  # Add fusion frequencies
+  fusion_df <- rbind(fusion_df,
+                     data.frame(subtype = subtype,
+                                subtype_display = display_name,
+                                alteration = paste0(names(primary_fusion_freq[[subtype]]), "_fusion"),
+                                primary_freq = unlist(primary_fusion_freq[[subtype]]),
+                                metastatic_freq = unlist(metastatic_fusion_freq[[subtype]])))
+}
+# Reset row names to numbers
+rownames(mutation_df) <- 1:nrow(mutation_df)
+rownames(fusion_df) <- 1:nrow(fusion_df)
 
 # Find rows with oncogenic alterations, i.e. amplifications, mutations, deletions, fusions
 oncogenic_alterations <- table_s2a[which(table_s2a$alteration_type == "oncogenic alteration"),]

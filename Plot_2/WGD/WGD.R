@@ -34,10 +34,23 @@ removeEmptyCols <- function(df) {
 
 
 # Open mutation data
-mutations <- read.table(file = "Data/data_mutations.txt", 
-                                        header = TRUE, fill = TRUE)
+mutations <- read.delim(file = "Data/data_mutations.txt", 
+                        header = TRUE)
 
-unique(mutations$Variant_Type)
+oncokb_results <- read.table("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
+                             header = TRUE, fill = TRUE, sep = "\t")
+
+oncokb_results_subset <- oncokb_results[which(oncokb_results$Subtype != "Uterine Hypermutated"), ]
+
+head(sort(table(oncokb_results_subset$Sample_ID), decreasing = T))
+
+oncokb_results[which(oncokb_results$Sample_ID == "P-0027929-T01-IM6"),]$Subtype[1]
+
+which(mutations$Reference_Allele != mutations$Tumor_Seq_Allele1)
+
+unique(mutations$Reference_Allele)
+
+unique(mutations$dp)
 
 cna <- read.table(file = "Data/data_cna.txt", 
                         header = TRUE, fill = TRUE)

@@ -1,0 +1,360 @@
+THIS FILE CONTAINS THE METADATA ABOUT SYSTEM AND RUNTIME
+
+
+-------System Info-------
+Operating System Name: Windows
+Nodename: LAPTOP-OD1MPR97
+Release: 10
+Version: 10.0.22000
+
+-------Python and Package Versions------- 
+Python Version: 3.9.7
+SigProfilerMatrixGenerator Version: 1.2.4
+SigProfilerPlotting version: 1.2.1
+matplotlib version: 3.4.3
+statsmodels version: 0.12.2
+scipy version: 1.7.1
+pandas version: 1.3.4
+numpy version: 1.21.5
+
+-------Vital Parameters Used for the execution -------
+Project: SKCM_MAF
+Genome: GRCh37
+Input File Path: C:\Users\redds\Documents\GitHub\Genomics-II-Group\COSMIC\MAFs\Subtypes\Melanoma_Cutaneous\/
+exome: False
+bed_file: None
+chrom_based: False
+plot: True
+tsb_stat: False
+seqInfo: False
+
+-------Date and Time Data------- 
+Date and Clock time when the execution started: 2022-04-22 15:28:48.710015
+
+
+-------Runtime Checkpoints------- 
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21968229 C G
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974732 A C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974679 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971100 GG AT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971100 GG AT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974675 A T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971116 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971075 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970899 A C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971000 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974676 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974684 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974723 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974702 T A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971093 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971093 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974684 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970900 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970900 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974679 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971028 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971149 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971029 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970901 C G
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970901 C G
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971116 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971170 A G
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971029 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971028 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971194 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971116 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971116 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971123 T C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971123 T C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971018 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971018 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971093 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971093 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971016 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971016 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970901 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971170 A T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974679 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970939 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971207 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971207 CC TT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970906 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971106 G T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971153 CC AT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971153 CC AT
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971177 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971089 A G
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971099 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971099 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21970896 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974684 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971115 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971115 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971117 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971117 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971016 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971016 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971029 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971088 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971003 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971108 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971108 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 GG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971028 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971096 C A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971111 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971208 C T
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971088 G C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971088 G C
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971120 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974703 T A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971116 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971017 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974684 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974684 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21974684 G A
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971186 G A
+Chromosome 10 done
+Chromosome 11 done
+Chromosome 12 done
+Chromosome 13 done
+Chromosome 14 done
+Chromosome 15 done
+Chromosome 16 done
+Chromosome 17 done
+Chromosome 18 done
+Chromosome 19 done
+Chromosome 1 done
+Chromosome 20 done
+Chromosome 21 done
+Chromosome 22 done
+Chromosome 2 done
+Chromosome 3 done
+Chromosome 4 done
+Chromosome 5 done
+Chromosome 6 done
+Chromosome 7 done
+Chromosome 8 done
+Chromosome 9 done
+Chromosome MT done
+Chromosome X done
+Chromosome Y done
+The reference base does not match the reference chromosome position. Skipping this mutation: 10 70404594 AGGCATCGAGGTGGAGAAGT G
+The reference base does not match the reference chromosome position. Skipping this mutation: 10 104352343 ACC TTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 11 64571817 GCG CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 11 100996838 GGT AGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 11 119148874 GG A
+The reference base does not match the reference chromosome position. Skipping this mutation: 11 71942625 T AC
+The reference base does not match the reference chromosome position. Skipping this mutation: 12 46230637 TTTC CTTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 12 46245620 GGT A
+The reference base does not match the reference chromosome position. Skipping this mutation: 12 46231325 TTTT ATC
+The reference base does not match the reference chromosome position. Skipping this mutation: 14 65544744 CCC TTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 15 88690573 AAG GAA
+The reference base does not match the reference chromosome position. Skipping this mutation: 15 38614574 G AA
+The reference base does not match the reference chromosome position. Skipping this mutation: 15 42042510 GT A
+The reference base does not match the reference chromosome position. Skipping this mutation: 15 42058215 TTT ATC
+The reference base does not match the reference chromosome position. Skipping this mutation: 16 68849466 CGA TGG
+The reference base does not match the reference chromosome position. Skipping this mutation: 16 81904519 ATG TT
+The reference base does not match the reference chromosome position. Skipping this mutation: 16 9858356 TTC ATT
+The reference base does not match the reference chromosome position. Skipping this mutation: 16 72832552 TCTCCGCTTTGCTCTGT C
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 38508317 CTAC TTA
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7578441 TAGATGGCC CCG
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 29586096 TATG ACT
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7579356 ACG CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7577051 GAGG TA
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 37627622 TTAC GTAG
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 56801448 ACC CCT
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7579477 GCA AC
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7577081 CCTC TCTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7577067 GCG CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7578479 TGT GG
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 55334893 TAC CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 37649080 TTA CAT
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 29592351 ACGGAGGTAAGAAATA CTGG
+The reference base does not match the reference chromosome position. Skipping this mutation: 18 39537631 GATCT TAACC
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 18968281 CTC TTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 36218657 GCGCTTC A
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 36210904 CTC AT
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 36210904 CTC TT
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 11123732 TAC CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 15355563 GGA AAT
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 2217784 CGCC TCT
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 36227721 TTG CCC
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 42752972 AGA GG
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 18961601 CC T
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 16258396 GAACATCCCG TACATCCCA
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 27099952 CAC TA
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 36932043 CCTC TCTC
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 27100297 ATTC TTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 16258600 ACACGCC CT
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 16260837 GGGGCCAGTGAATGTTCTCACCACTCCAGTGAACGCCACGGTGGGCACAGTGAATGCC TGT
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 115256526 CTTG TTTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 27087567 CTC TTA
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 226558155 GGA AAG
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 27056252 TAC CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 27099422 GATGGGGCGCATGTCC AG
+The reference base does not match the reference chromosome position. Skipping this mutation: 20 9538295 CCC TCT
+The reference base does not match the reference chromosome position. Skipping this mutation: 22 30050703 TTC CTA
+The reference base does not match the reference chromosome position. Skipping this mutation: 2 29551281 GGA AGT
+The reference base does not match the reference chromosome position. Skipping this mutation: 2 25463286 GGTAGA AGT
+The reference base does not match the reference chromosome position. Skipping this mutation: 3 52637710 GAA AAT
+The reference base does not match the reference chromosome position. Skipping this mutation: 3 149238708 GTC TTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 3 89390914 TTC CTA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 187524118 GAC A
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 187509959 GGGG AGGC
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55161407 CTT TTC
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 153259053 TCT ACA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 153247194 G AA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55964426 CCC TCT
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 67522615 TAGC AGT
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 225662 GCC T
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 112174436 GGG AGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 1295227 GGG AGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 1260650 TGTTCC CGACG
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 1295227 GGG AAA
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 176673711 GAAAAC AAAATT
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 1295227 GGG AGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 1295227 GGG AAA
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 1295227 GGG AGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 6 157517300 CC T
+The reference base does not match the reference chromosome position. Skipping this mutation: 6 30672427 GTG TA
+The reference base does not match the reference chromosome position. Skipping this mutation: 7 148511038 CTTGTTGCTCACCTTTTTGGAGCCCCGCTGAATACTGCAGTTCTTGCAGGACACATTTTTACTGT G
+The reference base does not match the reference chromosome position. Skipping this mutation: 7 140477842 CTGTCACATTC AG
+The reference base does not match the reference chromosome position. Skipping this mutation: 7 6442035 CCTCC GCTCT
+The reference base does not match the reference chromosome position. Skipping this mutation: 7 140453130 ATTTCA TAT
+The reference base does not match the reference chromosome position. Skipping this mutation: 8 117874082 AAGTCAGGCAGT G
+The reference base does not match the reference chromosome position. Skipping this mutation: 8 68934208 CATAGGTTAAAATTGCAGAATGGTGAATAAAATGACTAATTTATTCTTACATGAATTCACAG ACATACAGTAACACATAAATATACACTTACCA
+The reference base does not match the reference chromosome position. Skipping this mutation: 8 68930093 GAATG AAATA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971105-GTCGTGCACGG-
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 135787672 GCTA CTT
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974714-GCAGCGCCCCCGCCTCCA-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971187GCGAA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971187GCGAA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921994050-GGCTAGAGACGAATTATCTGTTTACGAAATCACACCAAACAAAACAAGTGCCGAATGCGCCCCGGACTTTTCGAGGGCCTTTCCTACCTGGTCTTCTAGGAAGCGGCTGCTGCCCTAGACGCTGGCTCCTCAGTAGCATCAGCACGAGGGCCA-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971134-GGTCGGCGCAGTTGGGCTCCGCGCCGTGGAGCAGCAGCAGCTCCGCCACTCGGGCGCTGCCCATCATCATGACCTGCCAGAGAGAACAGAAT-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971134-GGTCGGCGCAGTTGGGCTCCGCGCCGTGGAGCAGCAGCAGCTCCGCCACTCGGGCGCTGCCCATCATCATGACCTGCCAGAGAGAACAGAAT-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971121--T
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971121--T
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 21974742 CACCT GTG
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974742CACCTGTG
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 139391169 A CCC
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971113--GGGTCGGGTGAGAGTGGCG
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971113--GGGTCGGGTGAGAGTGGCG
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 21971059 CCCG TCCCC
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971059CCCGTCCCC
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971059CCCGTCCCC
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971186-GGCGCTGC-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971186-GGCGCTGC-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974719--C
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974682-CGGCCTCCGAC-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971065-G-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971065-G-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971196-A-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971196-A-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974694--T
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974714-GCAGCGCCCCCGCCTCCA-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921968233-G-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921968232--GG
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 21971125 GAG AA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971125GAGAA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971125GAGAA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971154-G-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971154-G-
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 21971154 GCG CT
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971154GCGCT
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971160--GGAGCA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971160--GGAGCA
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971132-GGGGTCGGCGCAGTT-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971132-GGGGTCGGCGCAGTT-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921970982-ATCGCGAT-
+There appears to be a duplicate single base substitution. Skipping this mutation: 921971060--CGGG
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974694--T
+There appears to be a duplicate single base substitution. Skipping this mutation: 921974714-GCAGCGCCCCCGCCTCCA-
+The reference base does not match the reference chromosome position. Skipping this mutation: 9 5126330 AGGA CGGG
+The reference base does not match the reference chromosome position. Skipping this mutation: X 47028799 ACTA GCTG
+The reference base does not match the reference chromosome position. Skipping this mutation: X 63412924 GA C

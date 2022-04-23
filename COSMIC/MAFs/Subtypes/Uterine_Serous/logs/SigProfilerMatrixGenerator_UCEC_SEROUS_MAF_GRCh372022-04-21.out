@@ -1,0 +1,71 @@
+THIS FILE CONTAINS THE METADATA ABOUT SYSTEM AND RUNTIME
+
+
+-------System Info-------
+Operating System Name: Windows
+Nodename: LAPTOP-OD1MPR97
+Release: 10
+Version: 10.0.22000
+
+-------Python and Package Versions------- 
+Python Version: 3.9.7
+SigProfilerMatrixGenerator Version: 1.2.4
+SigProfilerPlotting version: 1.2.1
+matplotlib version: 3.4.3
+statsmodels version: 0.12.2
+scipy version: 1.7.1
+pandas version: 1.3.4
+numpy version: 1.21.5
+
+-------Vital Parameters Used for the execution -------
+Project: UCEC_SEROUS_MAF
+Genome: GRCh37
+Input File Path: C:\Users\redds\Documents\GitHub\Genomics-II-Group\COSMIC\MAFs\Subtypes\Uterine_Serous\/
+exome: False
+bed_file: None
+chrom_based: False
+plot: True
+tsb_stat: False
+seqInfo: False
+
+-------Date and Time Data------- 
+Date and Clock time when the execution started: 2022-04-21 21:39:11.499243
+
+
+-------Runtime Checkpoints------- 
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971140 G A
+Chromosome 10 done
+Chromosome 11 done
+Chromosome 12 done
+Chromosome 13 done
+Chromosome 14 done
+Chromosome 15 done
+Chromosome 16 done
+Chromosome 17 done
+Chromosome 18 done
+Chromosome 19 done
+Chromosome 1 done
+Chromosome 20 done
+Chromosome 21 done
+Chromosome 22 done
+Chromosome 2 done
+Chromosome 3 done
+Chromosome 4 done
+Chromosome 5 done
+Chromosome 6 done
+Chromosome 7 done
+Chromosome 8 done
+Chromosome 9 done
+Chromosome MT done
+Chromosome X done
+Chromosome Y done
+The reference base does not match the reference chromosome position. Skipping this mutation: 11 100909997 ACAAGCTGTTGGTTTAACAAAT TCAAAC
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7979589 GGCTGTCATAGGTGAGCTCCGACA CG
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7577081 CCTC TCTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7577554 GCAGGAACTGTTACACATGT ACAGG
+The reference base does not match the reference chromosome position. Skipping this mutation: 17 7578466 TGCCGGGCGG CGCC
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 15350599 CTGGGGCTGGACCACGGAGGCAGCACG ATGGCA
+The reference base does not match the reference chromosome position. Skipping this mutation: 19 15291797 CGA G
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 150551363 GTCGTAAGGTCTCCAGCG ATCC
+The reference base does not match the reference chromosome position. Skipping this mutation: 1 27059241 GAT A
+The reference base does not match the reference chromosome position. Skipping this mutation: 5 67591231 CAAAACTGTTTTTCAGGTGGTT GAA

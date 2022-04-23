@@ -1,0 +1,35 @@
+THIS FILE CONTAINS THE METADATA ABOUT SYSTEM AND RUNTIME
+
+
+-------System Info-------
+Operating System Name: Windows
+Nodename: LAPTOP-OD1MPR97
+Release: 10
+Version: 10.0.22000
+
+-------Python and Package Versions------- 
+Python Version: 3.9.7
+SigProfilerMatrixGenerator Version: 1.2.4
+SigProfilerPlotting version: 1.2.1
+matplotlib version: 3.4.3
+statsmodels version: 0.12.2
+scipy version: 1.7.1
+pandas version: 1.3.4
+numpy version: 1.21.5
+
+-------Vital Parameters Used for the execution -------
+Project: mutations_with_oncotree_codes.txt
+Genome: GRCh37
+Input File Path: C:\Users\redds\Documents\GitHub\Genomics-II-Group\Plot_2\OncoKB\/
+exome: False
+bed_file: None
+chrom_based: False
+plot: True
+tsb_stat: False
+seqInfo: False
+
+-------Date and Time Data------- 
+Date and Clock time when the execution started: 2022-04-21 17:50:56.043816
+
+
+-------Runtime Checkpoints------- 

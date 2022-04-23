@@ -1,0 +1,100 @@
+THIS FILE CONTAINS THE METADATA ABOUT SYSTEM AND RUNTIME
+
+
+-------System Info-------
+Operating System Name: Windows
+Nodename: LAPTOP-OD1MPR97
+Release: 10
+Version: 10.0.22000
+
+-------Python and Package Versions------- 
+Python Version: 3.9.7
+SigProfilerMatrixGenerator Version: 1.2.4
+SigProfilerPlotting version: 1.2.1
+matplotlib version: 3.4.3
+statsmodels version: 0.12.2
+scipy version: 1.7.1
+pandas version: 1.3.4
+numpy version: 1.21.5
+
+-------Vital Parameters Used for the execution -------
+Project: GIST_MAF
+Genome: GRCh37
+Input File Path: C:\Users\redds\Documents\GitHub\Genomics-II-Group\COSMIC\MAFs\Subtypes\Gastrointestinal_Stromal\/
+exome: False
+bed_file: None
+chrom_based: False
+plot: True
+tsb_stat: False
+seqInfo: False
+
+-------Date and Time Data------- 
+Date and Clock time when the execution started: 2022-04-22 08:16:30.218786
+
+
+-------Runtime Checkpoints------- 
+There appears to be a duplicate single base substitution. Skipping this mutation: 9 21971184 T G
+Chromosome 10 done
+Chromosome 11 done
+Chromosome 12 done
+Chromosome 13 done
+Chromosome 14 done
+Chromosome 15 done
+Chromosome 16 done
+Chromosome 17 done
+Chromosome 18 done
+Chromosome 19 done
+Chromosome 1 done
+Chromosome 20 done
+Chromosome 21 done
+Chromosome 22 done
+Chromosome 2 done
+Chromosome 3 done
+Chromosome 4 done
+Chromosome 5 done
+Chromosome 6 done
+Chromosome 7 done
+Chromosome 8 done
+Chromosome 9 done
+Chromosome MT done
+Chromosome X done
+Chromosome Y done
+The reference base does not match the reference chromosome position. Skipping this mutation: 10 89653766 AACTAAAGTACTCA TAGTTAAG
+The reference base does not match the reference chromosome position. Skipping this mutation: 14 65544648 CATTCT G
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593609 TTGT CTGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593601 GTGGAAGGTTGTTGA ACCTTC
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593581 AAACCCATGTATGAAGT CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593605 AAGGTTGTT TTG
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593602 TGGA C
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593600 AGTGGAAGGTTGTTG GTGGA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593601 GTGGAAGGTTGTTGAG ACAA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55152101 ATG CTA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55599333 TTCT G
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593634 TTATGTTTACATAGACCCAACACAACTT GGAA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593581 AAACCCATGTATGAAG C
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593656 CAACTTCCTTATGATCACAAATG TT
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593620 ATAAATGGAAACAATTATGTTTACATAGACCCAACACAAC T
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593603 GGAA T
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593581 AAACCCATGTATGAAGT CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593603 GGAA C
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593600 AGTGGAA G
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55152097 ATGCATGATT C
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593600 AGTGGAA G
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593591 ATGAAGTACAGTGGAAG CT
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55599336 TAA CTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593602 TGGAAGGTTGTTGAGGAG AGGGAA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593588 TGTATGAAGTACAGTGGAAG GA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593588 TGTATGAAGTACAG CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593581 AAACCCATGTATGAAG T
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593636 ATGTTTACATAGACCCAACACAAC GTG
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593581 AAACCCATGTATGAAGT CA
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55595517 ACA TTT
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593601 GTGG A
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593581 AAACCCATGTATGAAG T
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593600 AGTGGAAGGTTGTTGA C
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593601 GTGGAAGGT CAC
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593601 GTGGAAGGTTG CT
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593607 GGTTGTTGAGGAGATAAATGGA T
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593636 ATGTTTACATAGACCCAACACAAC GTG
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593637 TGTTTACATAGACCCAACACAACT GTG
+The reference base does not match the reference chromosome position. Skipping this mutation: 4 55593601 GTGGA AC

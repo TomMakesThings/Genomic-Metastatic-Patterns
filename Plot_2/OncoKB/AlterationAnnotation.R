@@ -61,8 +61,8 @@ if (add_oncotree_codes) {
               sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 }
 
-# oncokb_results <- read.table("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
-#                              header = TRUE, fill = TRUE, sep = "\t")
+oncokb_results <- read.table("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
+                             header = TRUE, fill = TRUE, sep = "\t")
 
 # Open OncoKB annotated mutation data from zip file
 # oncokb_results <- removeEmptyCols(data.frame(read.table(unzip("Plot_2/OncoKB/oncokb_annotated_mutations.zip",
