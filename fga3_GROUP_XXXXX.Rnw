@@ -1,0 +1,1517 @@
+\documentclass{article}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Genomics II Group Project}
+\author{Tom Wilson, Qingqing Zhou, Zhan Shi and Ralph Estanboulieh}
+
+\maketitle
+
+\section{About}
+The paper we recreated is "Genomic characterization of metastatic patterns from prospective clinical sequencing of 25,000 patients", under supervision of Kate Eason.
+
+\subsection{Contributions}
+Tom: plotting figures 2C, 3A and 3B calculation of FGA, WGD, alteration annotation with OncoKB, running ASCATS for arm-level CNA annotation, spearmans correlation coefficient, Mann-Whitney U tests and regression to find significance difference between primary and metastatic samples
+
+Qing: plotting figure 3C, calculation of TMB, spearmans correlation coefficient between alterations and metastatic burden
+
+Zhan: plotting figures 2A and 4A,calculation of FGA, plotting figure 2A
+
+Ralph: plotting figure 1 and 2B, calculation of WGD, comparing calculated FGA/TMB/WGD to paper's results
+
+\section{Figure 1}
+Figure 1 was plotted in Python. Refer to the ipynb notebook.
+
+\section{Figure 2}
+\subsection{Figure 2A}
+\subsubsection{Fraction Genome Altered (FGA)}
+FGA was calculated per sample as the fraction of the genome with absolute log2 copy ratios > 0.2.
+
+<<echo = T, eval = F>>=
+library(dplyr)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Open CNA segmentation file
+cna_hg19 <- read.table(file = "Data/data_cna_hg19.seg", header = TRUE)
+# Open calculated TMB data
+samples_data <- read.csv(file = "Plot_2/TMB/calculated_TMB.csv",
+                         header = TRUE, fill = TRUE)
+
+# Calculate fga for each tumour sample
+fga <- c()
+
+for (id in unique(cna_hg19$ID)) {
+  # Find the CNAs for the sample
+  sample_cna <- cna_hg19 %>% filter(ID == id)
+  # Calculate the total size of the sequenced genome
+  genome_size <- sum(sample_cna$loc.end - sample_cna$loc.start)
+  # Determine which rows have absolute log2 copy ratios > 0.2
+  log2_thresholded <- as.integer(abs(sample_cna$seg.mean) > 0.2)
+  # Scale by the size of each region of the genome
+  log2_scaled <- log2_thresholded * (sample_cna$loc.end - sample_cna$loc.start)
+  # Divide by genome size to calculate fraction of genome altered (FGA)
+  fga <- c(fga, sum(log2_scaled) / genome_size)
+}
+
+# Add IDs to calculated FGAs
+fga_df <- data.frame(SAMPLE_ID = unique(cna_hg19$ID), Our_FGA = fga)
+
+# Combine with calculated TMB data
+fga_samples_data <- merge(samples_data[ , !(names(samples_data) %in% "FGA")],
+                          fga_df, by = "SAMPLE_ID")
+fga_samples_data$Sup_FGA <- samples_data$FGA
+
+# Save to file
+write.csv(fga_samples_data, "Plot_2/FGA/calculated_TMB_and_FGA.csv", row.names = FALSE)
+@
+
+\subsection{Whole Genome Duplication (WGD)}
+In the original paper, FACETS was used to estimate WGD. However, this tool requires BAM files which are not publicly available. Therefore we attempted to two different  methods for calculating WGD: computing it from ASCETS arm-level CNAs and segmented CNV data.
+
+
+\subsubsection{ASCATS WGD}
+The ASCETS version was estimated based on the fraction of amplification across all a sample's chromosomes. See code for ASCETS in section 2.
+
+\subsection{Tumor Mutational Burden (TMB)}
+
+<<echo = T, eval = F>>=
+CODE HERE
+@
+
+\subsubsection{Figure 2A Plotting Code}
+
+<<echo = T, eval = F>>=
+#######   figure2_A.R written by Zhan Shi(zs384)
+
+library("readxl")
+library(tidyverse)
+tableS2A <- read_excel("Tables_S1-4/Table_S2.xlsx",skip = 1)
+tableS2A<-data.frame(tableS2A)
+
+tableS1A<-read_excel("Tables_S1-4/Table_S1.xlsx",skip = 1)
+tableS1A<-data.frame(tableS1A)
+
+
+#
+significant_info<-read.csv(file = "Plot_2/Figure2B/significant_subtypes.csv",
+                           header = TRUE, fill = TRUE)
+#our calculated fga and tmb
+calculated_fga_tmb<-read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                             header = TRUE, fill = TRUE)
+
+subtypes=unique(calculated_fga_tmb$SUBTYPE_ABBREVIATION)
+subtypes_fullname=unique(calculated_fga_tmb$SUBTYPE)
+# get median of fga 
+get_median_fga<-function(subtype,sample_type){
+  if (sample_type==0){
+  temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Primary')
+  }
+  if (sample_type==1){
+  temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Metastasis')
+  }
+  median=median(temp$Our_FGA)
+}
+fga_p_median<-c()
+fga_m_median<-c()
+for (i in 1:length(subtypes)){
+  fga_p_median<-c(fga_p_median,get_median_fga(subtypes[i],0))
+  fga_m_median<-c(fga_m_median,get_median_fga(subtypes[i],1))
+}
+fga_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=fga_p_median,m_median=fga_m_median,sig=significant_info$FGA_SIGNIFICANT)
+
+# get median of tmb
+get_median_tmb<-function(subtype,sample_type){
+  if (sample_type==0){
+    temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Primary')
+  }
+  if (sample_type==1){
+    temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Metastasis')
+  }
+  median=median(temp$Our_TMB)
+}
+tmb_p_median<-c()
+tmb_m_median<-c()
+for (i in 1:length(subtypes)){
+  tmb_p_median<-c(tmb_p_median,get_median_tmb(subtypes[i],0))
+  tmb_m_median<-c(tmb_m_median,get_median_tmb(subtypes[i],1))
+}
+
+tmb_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=tmb_p_median,m_median=tmb_m_median,sig=significant_info$TMB_SIGNIFICANT)
+
+
+#### assign color
+data2<-tableS2A %>% filter(alteration=='fga')
+data2$colour=NA
+assign_color=function(data){
+  for (i in 1:length(data[,1])){
+    for (j in 1:length(tableS1A[,1])){
+      
+    
+      if (data[i,1]==tableS1A[j,1]){
+        data$colour[i]=tableS1A$color_subtype[j]
+      }
+    }
+  }
+  return(data)
+}
+
+assign_col=function(data){
+  for (i in 1:length(data[,1])){
+    for (j in 1:length(tableS1A[,1])){
+      
+      
+      if (data[i,1]==tableS1A[j,9]){
+        data$colour[i]=tableS1A$color_subtype[j]
+      }
+    }
+  }
+  return(data)
+}
+
+data2<-assign_color(data2)
+fga_data<-assign_col(fga_data)
+
+#threshold used for figure2A
+data2_sig=data2 %>% filter(qval<0.05)
+data2_sig
+data2
+
+#plot figure2A_fga origin
+data2$tumor_type=factor(data2$tumor_type,levels=data2$tumor_type)
+data2$tumor_type
+ggplot(data2,aes(primary_median,metastasis_median,label=tumor_type,color=factor(colour)))+
+  xlim(-0.02,0.52)+
+  ylim(-0.02,0.52)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=data2 %>% filter(qval<0.05),alpha=0.5,size=7,aes(color=data2_sig$colour))+
+  #scale_color_manual(values=data2$colour)+
+  geom_text(data=data2 %>% filter(qval<0.05),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median ',x='Primary median ',title = 'Fraction of genome altered',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+
+###
+#plot figure2A_fga our result
+ggplot(fga_data,aes(p_median,m_median,label=subtypes,color=colour))+
+  xlim(-0.02,0.52)+
+  ylim(-0.02,0.52)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=fga_data %>% filter(sig==TRUE),alpha=0.5,size=7,aes(color=colour))+
+  #scale_color_manual(values=data2$colour)+
+  geom_text(data=fga_data  %>% filter(sig==TRUE),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median ',x='Primary median ',title = 'Fraction of genome altered',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+
+
+###############################
+### our wgd
+cna_data <- read.csv(file = "Plot_2/aSCNAs/sample_arm_level_cna.csv",
+                     header = TRUE, fill = TRUE)
+score<-read.csv(file = "Plot_2/aSCNAs/ascets_results_aneuploidy_scores.txt",
+                header = TRUE, fill = TRUE,sep='\t')
+calculated_fga_tmb$wgd<-cna_data$ARM_WGD
+#calculated_fga_tmb$wgd<-score$aneuploidy_score
+
+get_median_wgd<-function(subtype,sample_type){
+  if (sample_type==0){
+    temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Primary')
+  }
+  if (sample_type==1){
+    temp=calculated_fga_tmb %>% filter(SUBTYPE_ABBREVIATION==subtype) %>% filter(SAMPLE_TYPE=='Metastasis')
+  }
+  median=median(temp$wgd)
+}
+wgd_p_median<-c()
+wgd_m_median<-c()
+for (i in 1:length(subtypes)){
+  wgd_p_median<-c(wgd_p_median,get_median_wgd(subtypes[i],0))
+  wgd_m_median<-c(wgd_m_median,get_median_wgd(subtypes[i],1))
+}
+
+wgd_data<-data.frame(subtypes_fullname=subtypes_fullname,subtypes=subtypes,p_median=wgd_p_median,m_median=wgd_m_median,sig=significant_info$WGD_SIGNIFICANT)
+
+
+#plot figure 2A_wgd origin
+data_wgd<-tableS2A %>%  filter(alteration=='WGD')
+data_wgd=assign_color(data_wgd)
+data_wgd %>% filter(qval<0.05)
+
+ggplot(data_wgd,aes(primary_pc,metastasis_pc,label=tumor_type,color=factor(colour)))+
+  xlim(-0.02,1.02)+
+  ylim(-0.02,1.02)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=data_wgd %>% filter(qval<0.05),alpha=0.5,size=7,aes(color=colour))+
+  scale_color_manual(values=data_wgd$colour)+
+  geom_text(data=data_wgd %>% filter(qval<0.05),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median ',x='Primary median ',title = 'Whole genome duplication',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+
+
+#plot figure 2A_wgd our result
+wgd_data=assign_col(wgd_data)
+wgd_data
+ggplot(wgd_data,aes(p_median,m_median,label=subtypes,color=colour))+
+  xlim(-0.02,0.3)+
+  ylim(-0.02,0.3)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=wgd_data %>% filter(sig==TRUE),alpha=0.5,size=7,aes(color=colour))+
+  geom_text(data=wgd_data %>% filter(sig==TRUE),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median ',x='Primary median ',title = 'Whole genome duplication',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+
+
+###############################
+#plot figure 2A_tmb origin
+data_tmb<-tableS2A %>%  filter(alteration=='tmb')
+data_tmb=assign_color(data_tmb)
+data_tmb%>% filter(qval<0.05)
+
+ggplot(data_tmb,aes(primary_median,metastasis_median,label=tumor_type,color=colour))+
+  xlim(-0.02,10)+
+  ylim(-0.02,10)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=data_tmb %>% filter(qval<0.05),alpha=0.5,size=7,aes(color=colour))+
+  scale_color_manual(values=data_tmb$colour)+
+  geom_text(data=data_tmb %>% filter(qval<0.05),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median mut/Mb',x='Primary median mut/Mb',title = 'Tumor mutational burden',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+#plot figure 2A_tmb our result
+tmb_data=assign_col(tmb_data)
+tmb_data
+ggplot(tmb_data,aes(p_median,m_median,label=subtypes,color=colour))+
+  xlim(-0.02,10)+
+  ylim(-0.02,10)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_point(size=4)+
+  geom_point(data=tmb_data %>% filter(sig==TRUE),alpha=0.5,size=7,aes(color=colour))+
+  geom_text(data=tmb_data %>% filter(sig==TRUE),hjust=0.5,vjust=1.5)+
+  geom_abline(slope=1,color='grey',size=1)+
+  labs(y='Metastatsis median ',x='Primary median ',title = 'Tumor mutational burden',size=15)+
+  theme(plot.title = element_text(size = 20),axis.title.x = element_text(size=15),axis.title.y = element_text(size=15))+
+  scale_colour_identity()
+@
+
+\subsection{Figure 2B}
+\subsubsection{Significance Between Primary and Metastasis for FGA, WGD, TMB}
+Significance between primary and metastasis samples for FGA, WGD, TMB and TMB was quantified using the Mann-Whitney U test. q-values were calculated by adjusting p-values for false discovery rate and a q-value < 0.05 was considered statistically significant. TMB high was calculated based on the fraction of samples per subtype for primary and metastatic samples with a tumor mutational burden >= 10 mutations per megabase.
+
+<<echo = T, eval = F>>=
+library(tibble)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Set q-value threshold
+q_value_threshold <- 0.05
+
+# Open calculated TMB and FGA data
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                         header = TRUE, fill = TRUE)
+cna_data <- read.csv(file = "Plot_2/aSCNAs/sample_arm_level_cna.csv",
+                         header = TRUE, fill = TRUE)
+
+# Add calculated WGD
+samples_data$Our_WGD <- cna_data$ARM_WGD
+# Get subtypes
+all_subtypes <- unique(samples_data$SUBTYPE)
+
+# Record TMB high, number of patients and WGD for primary and metastasis samples
+tmb_high_data <- data.frame()
+
+# Record p-values from Mann-Whitney U test of all subtypes
+fga_pvalues <- c()
+wgd_pvalues <- c()
+tmb_pvalues <- c()
+tmb_high_pvalues <- c()
+
+for (subtype in all_subtypes) {
+  # Get samples for the subtype
+  subtype_rows <- samples_data[which(samples_data$SUBTYPE == subtype), ]
+  
+  # Find primary and metastasis samples
+  primary_subtype <- subtype_rows[which(subtype_rows$SAMPLE_TYPE == "Primary"), ]
+  metastasis_subtype <- subtype_rows[which(subtype_rows$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Get samples with TMB >= 10 mut/Mb
+  primary_tmb_high <- primary_subtype[which(primary_subtype$Our_TMB >= 10), ]
+  metastasis_tmb_high <- metastasis_subtype[which(metastasis_subtype$Our_TMB >= 10), ]
+  
+  # Calculate fraction of samples with high metastatic burden
+  primary_tmb_frac <- nrow(primary_tmb_high) / nrow(primary_subtype)
+  metastasis_tmb_frac <- nrow(metastasis_tmb_high) / nrow(metastasis_subtype)
+  
+  # Record the TMB high fraction
+  tmb_high_data <- rbind(tmb_high_data,
+                         data.frame(SUBTYPE = subtype,
+                                    SAMPLE_TYPE = "Primary",
+                                    NUM_PATIENTS = nrow(primary_subtype),
+                                    TMB_HIGH_FRACTION = primary_tmb_frac,
+                                    WGD = mean(primary_subtype$Our_WGD)))
+  tmb_high_data <- rbind(tmb_high_data,
+                         data.frame(SUBTYPE = subtype,
+                                    SAMPLE_TYPE = "Metastasis",
+                                    NUM_PATIENTS = nrow(metastasis_subtype),
+                                    TMB_HIGH_FRACTION = metastasis_tmb_frac,
+                                    WGD = mean(metastasis_subtype$Our_WGD)))
+  
+  # Mann-Whitney U test to compare primary and metastasis samples
+  man_whitney_fga <- wilcox.test(primary_subtype$Our_FGA, metastasis_subtype$Our_FGA)
+  man_whitney_wgd <- wilcox.test(primary_subtype$Our_WGD, metastasis_subtype$Our_WGD)
+  man_whitney_tmb <- wilcox.test(primary_subtype$Our_TMB, metastasis_subtype$Our_TMB)
+  fga_pvalues <- c(fga_pvalues, man_whitney_fga$p.value)
+  wgd_pvalues <- c(wgd_pvalues, man_whitney_wgd$p.value)
+  tmb_pvalues <- c(tmb_pvalues, man_whitney_tmb$p.value)
+  
+  if (primary_tmb_frac == 0 | metastasis_tmb_frac == 0) {
+    # Set highest p-value if no high TMB samples found
+    tmb_high_pvalues <- c(tmb_high_pvalues, 1)
+  } else {
+    # Otherwise perform Mann-Whitney U test
+    man_whitney_tmb_high <- wilcox.test(primary_tmb_high$Our_TMB, metastasis_tmb_high$Our_TMB)
+    tmb_high_pvalues <- c(tmb_high_pvalues, man_whitney_tmb_high$p.value)
+  }
+}
+
+# Convert from p-values to q-values and return which subtypes are significant
+findSigniciant <- function(pvalues, subtype_list, threshold) {
+  qvalues <- p.adjust(pvalues, method = "fdr")
+  
+  return(qvalues < threshold)
+}
+
+# Find significant subtypes for FGA, WGD, TMB and TMB high
+fga_significant <- findSigniciant(fga_pvalues, all_subtypes, q_value_threshold)
+wgd_significant <- findSigniciant(wgd_pvalues, all_subtypes, q_value_threshold)
+tmb_significant <- findSigniciant(tmb_pvalues, all_subtypes, q_value_threshold)
+tmb_high_significant <- findSigniciant(tmb_high_pvalues, all_subtypes, q_value_threshold)
+
+significant_df <- data.frame(SUBTYPE = all_subtypes,
+                             FGA_SIGNIFICANT = fga_significant,
+                             WGD_SIGNIFICANT = wgd_significant,
+                             TMB_SIGNIFICANT = tmb_significant,
+                             TMB_HIGH_SIGNIFICANT = tmb_high_significant)
+
+# Save to file
+write.csv(significant_df, "Plot_2/Figure2B/significant_subtypes.csv", row.names = FALSE)
+write.csv(tmb_high_data, "Plot_2/Figure2B/tmb_high_and_wgd.csv", row.names = FALSE)
+@
+
+\subsubsection{OncoKB Annotation}
+Mutation, amplification, deletion and fusion alterations were annotated with actionability scores using OncoKb. oncokb-annotator was downloaded and run on anaconda using the following commands:
+
+python OncoKB_Annotator\MafAnnotator.py -i Data\data_mutations.txt -o Plot_2\OncoKB\oncokb_annotated_mutations.txt -c Data\data_clinical_sample.txt -b {ONCOKB_API_TOKEN}
+
+python OncoKB_Annotator\CnaAnnotator.py -i Data\data_cna.txt -o Plot_2\OncoKB\oncokb_annotated_cna.txt -c Data\data_clinical_sample.txt -b {ONCOKB_API_TOKEN}
+
+python OncoKB_Annotator\FusionAnnotator.py -i Data\data_fusions.txt -o Plot_2\OncoKB\oncokb_annotated_fusions.txt -c Data\data_clinical_sample.txt -b {ONCOKB_API_TOKEN}
+
+Code to reduce the size of the data_mutations.txt file and set it in a format for running MafAnnotator.py is given below.
+
+<<echo = T, eval = F>>=
+# Set the mutations MAF file to a format suitable for OncoKB annotation by adding OncoTree codes
+
+library(readr)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Remove NA columns from dataframe
+removeEmptyCols <- function(df) {
+  return(df[ ,colSums(is.na(df)) < nrow(df)])
+}
+
+# Open samples data
+samples_data <- read.table(file = "Data/data_clinical_sample.txt", sep = '\t', 
+                           quote = "", header = TRUE, fill = TRUE)
+# Open mutation data
+mutations <- removeEmptyCols(read.delim(file = "Data/data_mutations.txt", 
+                                        header = TRUE, fill = TRUE))
+
+# Get the sample IDs and number of mutations
+mutation_samples <- mutations["Tumor_Sample_Barcode"]
+n_mutations <- nrow(mutations)
+
+# Placeholders to record OncoTree code, sample ID and subtype per mutation
+oncotree_codes <- rep(NA, n_mutations)
+sample_ids <- rep(NA, n_mutations)
+subtypes <- rep(NA, n_mutations)
+sample_types <- rep(NA, n_mutations)
+
+# Add OncoTree codes for each mutation
+for (r in 1:n_mutations) {
+  # Find the sample ID for the mutation
+  sample_id <- mutation_samples[r,]
+  
+  if (!is.na(sample_id)) {
+    # Find and record the OncoTree code and sample ID
+    sample <- samples_data[which(samples_data$SAMPLE_ID == sample_id), ]
+    oncotree_codes[r] <- sample$ONCOTREE_CODE
+    sample_ids[r] <- sample_id
+    subtypes[r] <- sample$SUBTYPE
+    sample_types[r] <- sample$SAMPLE_TYPE
+  }
+}
+
+# Set the columns required for MafAnnotator
+oncokb_format <- mutations[c("Hugo_Symbol", "Variant_Classification",
+                             "Tumor_Sample_Barcode", "HGVSp_Short",
+                             "Start_Position", "End_Position")]
+oncokb_format$Sample_ID <- sample_ids
+oncokb_format$OncoTree_Code <- oncotree_codes
+oncokb_format$Subtype <- subtypes
+oncokb_format$Sample_Type <- sample_types
+
+# Save to file
+write.table(oncokb_format, file = "Plot_2/OncoKB/mutations_with_oncotree_codes.txt",
+            sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
+
+# View results annotated with OncoKb
+oncokb_results <- read.delim("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
+                             header = TRUE, fill = TRUE, sep = "\t")
+@
+
+\subsubsection{Arm-level CNA with ASCATS}
+Using segmented copy number data, chromosome arm-level copy number alterations were computed with the tool ASCETS. This was run with default parameters and hg19 chromosome arm genomic coordinates.
+
+<<echo = T, eval = F>>=
+library(stringr)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Run ASCETS, the arm-level copy number events caller for targeted sequencing data
+run_ascets <- F
+
+if (run_ascets) {
+  # Import ASCETS functions from script
+  source("ASCETS/ascets_resources.R")
+  
+  # Open CNA segmentation file
+  cna_hg19 <- read.table(file = "Data/data_cna_hg19.seg", header = TRUE)
+  # Open chromosome arm genomic coordinates for reference hg19
+  cytoband_hg19 <- read.table(file = "ASCETS/genomic_arm_coordinates_hg19.txt", header = TRUE)
+  
+  # Run ASCETS
+  ascets_output <- ascets(cna = cna_hg19, cytoband = cytoband_hg19, name = "ascets_results")
+  write_outputs_to_file(ascets_output, location = "Plot_2/aSCNAs")
+}
+
+# Open results of weighted average segment mean values for each arm in each sample
+average_segmeans <- read.table(file = "Plot_2/aSCNAs/ascets_results_arm_weighted_average_segmeans.txt",
+                               header = TRUE, check.names = FALSE)
+# Results of anuploidy scores
+aneuploidy_score <- read.table(file = "Plot_2/aSCNAs/ascets_results_aneuploidy_scores.txt",
+                               header = TRUE, check.names = FALSE)
+# Results of arm-level calls
+arm_level_calls <- read.table(file = "Plot_2/aSCNAs/ascets_results_arm_level_calls.txt",
+                              header = TRUE, check.names = FALSE)
+# Clinical sample data
+samples_data <- read.table(file = "Data/data_clinical_sample.txt", sep = '\t', 
+                           quote = "", header = TRUE, fill = TRUE)
+
+# Get columns of interest from clinical data
+samples_data <- samples_data[c("SAMPLE_ID", "SUBTYPE", "SAMPLE_TYPE", 
+                               "PRIMARY_SITE", "METASTATIC_SITE", "MET_SITE_COUNT")]
+
+# Select autosomal chromosomes from arm-level calls
+autosomal_calls <- arm_level_calls[, !names(arm_level_calls) %in% c("Xp", "Xq")]
+
+# Calculate frequency of chromosome amplification per sample
+amp_frequency <- c()
+
+for (sample in autosomal_calls$sample) {
+  # Get the row for the sample
+  row_calls <- autosomal_calls[which(autosomal_calls$sample == sample), ]
+  # Extract calls as a vector
+  sample_calls <- as.character(unname(as.vector(row_calls))[2:ncol(row_calls)])
+  
+  # Get the frequency of each type of call, i.e. AMP, DEL, NC, NEUTRAL
+  call_frequency <- table(sample_calls)
+  sample_amp <- unname(call_frequency["AMP"] / sum(call_frequency))
+  
+  # Check if frequency is undefined
+  if (is.na(sample_amp)) {
+    if ("NC" %in% names(call_frequency)) {
+      if (call_frequency["NC"] > sum(call_frequency)/2) {
+        # Set as NA if over half the calls are unknown
+        amp_frequency <- c(amp_frequency, NA)
+      } else {
+        # Otherwise set as zero as no amplification found
+        amp_frequency <- c(amp_frequency, 0)
+      }
+    } else {
+      amp_frequency <- c(amp_frequency, 0)
+    }
+  } else {
+    # Record the calculated amplification frequency
+    amp_frequency <- c(amp_frequency, sample_amp)
+  }
+}
+
+# Combine data to add labels to CNA results
+cna_annotation <- samples_data
+cna_annotation$ANEUPLOIDY_SCORE <- aneuploidy_score$aneuploidy_score
+# Record estimated WGD
+cna_annotation$ARM_WGD <- amp_frequency
+
+# Add sample information to arm-level calls data, then to weighted average segment means data
+arm_level_calls <- merge(cna_annotation, arm_level_calls,
+                         by.x = "SAMPLE_ID", by.y = "sample")
+sample_cna_df <- merge(cna_annotation, average_segmeans,
+                       by.x = "SAMPLE_ID", by.y = "sample")
+
+# Get list of subtypes
+all_subtypes <- unique(sample_cna_df$SUBTYPE)
+
+# Populate data of average per subtype of weighted average segment means
+subtype_mean_cna_df <- data.frame()
+
+for (subtype in all_subtypes) {
+  # Find primary and metastasis samples for each subtype
+  subtype_weighted_rows <- sample_cna_df[which(sample_cna_df$SUBTYPE == subtype), ]
+  primary_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Primary"), ]
+  metastasis_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Find primary and metastasis samples for each subtype
+  primary_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Primary"), ]
+  metastasis_subtype <- subtype_weighted_rows[which(subtype_weighted_rows$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Calculate average for all numeric columns
+  primary_means <- colMeans(primary_subtype[sapply(primary_subtype, is.numeric)])
+  metastasis_means <- colMeans(metastasis_subtype[sapply(metastasis_subtype, is.numeric)])
+  
+  # Add subtype and sample type to beginning
+  primary_means_df <- cbind(data.frame(SUBTYPE = subtype, SAMPLE_TYPE = "Primary"),
+                            data.frame(t(primary_means)))
+  metastasis_means_df <- cbind(data.frame(SUBTYPE = subtype, SAMPLE_TYPE = "Metastasis"),
+                               data.frame(t(metastasis_means)))
+  
+  # Add averages to subtype CNA dataframe
+  subtype_mean_cna_df <- rbind(subtype_mean_cna_df, primary_means_df)
+  subtype_mean_cna_df <- rbind(subtype_mean_cna_df, metastasis_means_df)
+}
+
+# Save to file
+write.csv(sample_cna_df, "Plot_2/aSCNAs/sample_arm_level_cna.csv", row.names = FALSE)
+write.csv(subtype_mean_cna_df, "Plot_2/aSCNAs/subtype_mean_arm_level_cna.csv", row.names = FALSE)
+write.csv(arm_level_calls, "Plot_2/aSCNAs/sample_arm_level_calls.csv", row.names = FALSE)
+@
+
+The frequency of arm-level copy number alterations (aCNAs) between primary and metastatic tumors was calculated as the fraction of AMP / DEL per chromsome arm, e.g. 12p, predicted by ASCETS. Significant differences between primary and metastatic aCNAs were quantified by logistic regression.
+
+<<echo = T, eval = F>>=
+library(stringr)
+library(reshape)
+library(brglm)
+
+# Open calculated TMB and FGA data
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                         header = TRUE, fill = TRUE)
+# Open ASCETS arm-level CNA results per sample
+subtype_mean_cna <- read.csv(file = "Plot_2/aSCNAs/subtype_mean_arm_level_cna.csv",
+                             header = TRUE, fill = TRUE)
+sample_cna <- read.csv(file = "Plot_2/aSCNAs/sample_arm_level_cna.csv",
+                       header = TRUE, fill = TRUE)
+arm_level_calls <- read.csv(file = "Plot_2/aSCNAs/sample_arm_level_calls.csv",
+                            header = TRUE, fill = TRUE)
+
+# Add FGA to CNA data
+sample_cna$FGA <- samples_data$Our_FGA
+
+# Use regex to find the column names for the chromosome arms, i.e. X10p, X10q, X11p...
+chromosome_cols <- names(subtype_mean_cna)[str_extract(names(subtype_mean_cna),
+                                                       "X\\d?\\d?p?q?") %in% names(subtype_mean_cna)]
+# Get subtypes
+all_subtypes <- unique(subtype_mean_cna$SUBTYPE)
+
+# Create dataframe of amplification and deletion fractions per subtype
+subtype_fraction_alteration <- data.frame()
+
+for (subtype in all_subtypes) {
+  # Find primary and metastasis samples for each subtype
+  subtype_call_rows <- arm_level_calls[which(arm_level_calls$SUBTYPE == subtype), ]
+  # Find primary and metastasis samples for each subtype
+  primary_subtype <- subtype_call_rows[which(subtype_call_rows$SAMPLE_TYPE == "Primary"), ]
+  metastasis_subtype <- subtype_call_rows[which(subtype_call_rows$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Calculate gain and loss frequency per chromosome arm
+  alt_frequencies <- list(Gain = list(Primary = list(), Metastasis = list()),
+                          Loss = list(Primary = list(), Metastasis = list()))
+  
+  for (arm_id in chromosome_cols) {
+    # Calculate gain and loss frequencies for primary samples
+    primary_alt_frequencies <- table(primary_subtype[arm_id])
+    primary_amp_frequency <- primary_alt_frequencies["AMP"] / sum(primary_alt_frequencies) * 100
+    primary_del_frequency <- primary_alt_frequencies["DEL"] / sum(primary_alt_frequencies) * 100
+    
+    # Calculate frequencies for metastatic samples
+    metastasis_alt_frequencies <- table(metastasis_subtype[arm_id])
+    metastasis_amp_frequency <- metastasis_alt_frequencies["AMP"] / sum(metastasis_alt_frequencies) * 100
+    metastasis_del_frequency <- metastasis_alt_frequencies["DEL"] / sum(metastasis_alt_frequencies) * 100
+    
+    # Record the frequencies
+    alt_frequencies[["Gain"]][["Primary"]][arm_id] <- primary_amp_frequency
+    alt_frequencies[["Gain"]][["Metastasis"]][arm_id] <- metastasis_amp_frequency
+    alt_frequencies[["Loss"]][["Primary"]][arm_id] <- primary_del_frequency
+    alt_frequencies[["Loss"]][["Metastasis"]][arm_id] <- metastasis_del_frequency
+  }
+  
+  # Iterate through alteration type, i.e. gain and loss
+  for (alt_type in names(alt_frequencies)) {
+    # Iterate through primary and metastasis sample types
+    for (sample_type in names(alt_frequencies[[alt_type]])) {
+      # Form row of the subtype frequencies for each sample type and alteration
+      fraction_alt_row <- data.frame(alt_frequencies[[alt_type]][[sample_type]])
+      # Replace any NA frequencies with 0
+      fraction_alt_row[is.na(fraction_alt_row)] <- 0
+      
+      # Add subtype annotation columns
+      fraction_alt_row <- cbind(data.frame(SUBTYPE = subtype_call_rows[1,]$SUBTYPE),
+                                data.frame(SAMPLE_TYPE = sample_type, ALTERATION = alt_type),
+                                fraction_alt_row)
+      # Record in main dataframe
+      subtype_fraction_alteration <- rbind(subtype_fraction_alteration, fraction_alt_row)
+    }
+  }
+}
+
+# Save frequency of arm-level copy number alterations between primary tumors and metastases
+write.csv(subtype_fraction_alteration, "Plot_2/Figure2B/subtype_arm_level_fraction_alteration.csv",
+          row.names = FALSE)
+
+# Normalise a dataframe column between 0 - 1
+normaliseColumn <-function(col_values) {
+  x <- col_values[!is.na(col_values)]
+  x <- (x - min(x)) / (max(x) - min(x))
+  col_values[!is.na(col_values)] <- x
+  
+  return(col_values)
+}
+
+# Split by primary and metastatic samples
+primary_fractions <- subtype_fraction_alteration[which(subtype_fraction_alteration$SAMPLE_TYPE == "Primary"), ]
+metastasis_fractions <- subtype_fraction_alteration[which(subtype_fraction_alteration$SAMPLE_TYPE == "Metastasis"), ]
+
+# Melt data so each gain/loss fraction is on a new row
+primary_alt_frac_melt <- melt(primary_fractions, id = setdiff(names(primary_fractions), chromosome_cols))
+names(primary_alt_frac_melt)[names(primary_alt_frac_melt) == "variable"] <- "ARM_ID"
+names(primary_alt_frac_melt)[names(primary_alt_frac_melt) == "value"] <- "PRIMARY_FRACTION"
+
+metastasis_fractions <- melt(metastasis_fractions, id = setdiff(names(metastasis_fractions), chromosome_cols))
+names(metastasis_fractions)[names(metastasis_fractions) == "variable"] <- "ARM_ID"
+names(metastasis_fractions)[names(metastasis_fractions) == "value"] <- "METASTASIS_FRACTION"
+
+# Combine melted data
+alt_frac_melt <- primary_alt_frac_melt[c("SUBTYPE", "ARM_ID", "PRIMARY_FRACTION")]
+alt_frac_melt$PRIMARY_FRACTION <- primary_alt_frac_melt$PRIMARY_FRACTION / 100
+alt_frac_melt$METASTASIS_FRACTION <- metastasis_fractions$METASTASIS_FRACTION / 100
+
+# Fit the logistic regression model
+fitted_model <- brglm(METASTASIS_FRACTION ~ PRIMARY_FRACTION, 
+                      family = binomial(), data = alt_frac_melt)
+regression_coefficients <- data.frame(coef(summary(fitted_model)))
+regression_coefficients["PRIMARY_FRACTION",]$Pr...z.. < 0.05
+@
+
+
+\subsubsection{Figure 2B Plotting Code}
+Figure 2B was plotted in Python. Refer to the ipynb notebook.
+
+\subsection{Figure 2C}
+Alterations, consisting of mutations, amplifications, deletions and fusions, were considered oncogenic if labelled as "Oncogenic" or "Likely oncogenic" by OncoKB. The frequency of each oncogenic alteration per subtype for primary and metastasis was calculated as the fraction of samples with the alteration, divided by the number of samples in the sub- and sample type. Oncogenic alterations were considered recurrent by checking if either their primary or metastatic frequency was > 5\%. Then they were filtered further and considered significant if they had q-value < 0.05 calculated from the Mann Whitney U test.
+
+<<echo = T, eval = F>>=
+library(readxl)
+library(ggplot2)
+library(stringr)
+library(ggpubr)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Remove NA columns from dataframe
+removeEmptyCols <- function(df) {
+  return(df[ ,colSums(is.na(df)) < nrow(df)])
+}
+
+# Open tables S1A and S2A 
+table_s1a <- data.frame(read_excel("Tables_S1-4/Table_S1.xlsx", sheet = 1, skip = 2))
+table_s2a <- data.frame(read_excel("Tables_S1-4/Table_S2.xlsx", sheet = 1, skip = 2))
+
+# Open calculated TMB and FGA data
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                         header = TRUE, fill = TRUE)
+# Open original CNA data
+cna_data <- read.delim(file = "Data/data_cna.txt", header = TRUE, fill = TRUE, sep = "\t")
+# Rename sample ID columns to match samples_data
+colnames(cna_data) <- gsub(x = colnames(cna_data), pattern = "\\.", replacement = "-")
+
+# Open mutation data annotated by OncoKB
+oncokb_mutations <- removeEmptyCols(read.delim("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
+                                               header = TRUE, fill = TRUE, sep = "\t"))
+# Open CNA data
+oncokb_cna <- removeEmptyCols(read.delim(file = "Plot_2/OncoKB/oncokb_annotated_cna.txt",
+                                         header = TRUE, fill = TRUE, sep = "\t"))
+# Open fusion data
+oncokb_fusions <- removeEmptyCols(read.delim(file = "Plot_2/OncoKB/oncokb_annotated_fusions.txt",
+                                             header = TRUE, fill = TRUE, sep = "\t"))
+
+# Find which alterations are oncogenic
+oncogenic_mutations <- oncokb_mutations[which(oncokb_mutations$ONCOGENIC == "Likely Oncogenic" |
+                                                oncokb_mutations$ONCOGENIC == "Oncogenic" ),]
+oncogenic_cna <- oncokb_cna[which(oncokb_cna$ONCOGENIC == "Likely Oncogenic" |
+                                    oncokb_cna$ONCOGENIC == "Oncogenic" ),]
+oncogenic_fusions <- oncokb_fusions[which(oncokb_fusions$ONCOGENIC == "Likely Oncogenic" |
+                                            oncokb_fusions$ONCOGENIC == "Oncogenic" ),]
+# Drop columns to reduce size of data
+oncogenic_mutations <- oncogenic_mutations[c("Hugo_Symbol", "Tumor_Sample_Barcode", "ONCOGENIC")]
+
+# Create list of all subtypes
+all_subtypes <- unique(samples_data$SUBTYPE)
+
+# Record frequencies of mutations, amplifications, deletions and fusions
+mutation_freqs <- list(primary = list(), metastatic = list())
+amp_freqs <- list(primary = list(), metastatic = list())
+del_freqs <- list(primary = list(), metastatic = list())
+fusion_freqs <- list(primary = list(), metastatic = list())
+
+for (subtype in all_subtypes) {
+  # Find all primary and metastatic samples for the subtype
+  subtype_samples <- samples_data[which(samples_data$SUBTYPE == subtype), ]
+  primary_samples <- subtype_samples[which(subtype_samples$SAMPLE_TYPE == "Primary"), ]
+  metastatic_samples <- subtype_samples[which(subtype_samples$SAMPLE_TYPE == "Metastasis"), ]
+  
+  # Get the IDs for subtype samples
+  primary_sample_ids <- primary_samples$SAMPLE_ID
+  metastatic_sample_ids <- metastatic_samples$SAMPLE_ID
+  
+  # Find the mutations in the primary and metastatic samples
+  primary_subtype_muts <- oncogenic_mutations[which(oncogenic_mutations$Tumor_Sample_Barcode %in% primary_sample_ids), ]
+  metastatic_subtype_muts <- oncogenic_mutations[which(oncogenic_mutations$Tumor_Sample_Barcode %in% metastatic_sample_ids), ]
+  
+  # Count the number of mutations for each gene using a maximum of 1 per sample
+  gene_mutation_counts <- list(primary = list(), metastatic = list())
+  
+  for (gene in unique(c(primary_subtype_muts$Hugo_Symbol, metastatic_subtype_muts$Hugo_Symbol))) {
+    # Find all subtype mutations for the gene
+    primary_gene_muts <- primary_subtype_muts[which(primary_subtype_muts$Hugo_Symbol == gene), ]
+    metastatic_gene_muts <- metastatic_subtype_muts[which(metastatic_subtype_muts$Hugo_Symbol == gene), ]
+    # Remove excess rows with repeated samples so sample occurs at most once
+    primary_gene_muts <- primary_gene_muts[!duplicated(primary_gene_muts$Tumor_Sample_Barcode), ]
+    metastatic_gene_muts <- metastatic_gene_muts[!duplicated(metastatic_gene_muts$Tumor_Sample_Barcode), ]
+    
+    # Record the number of mutations for the gene
+    if (nrow(primary_gene_muts) > 0) {
+      gene_mutation_counts[["primary"]][gene] <- nrow(primary_gene_muts)
+    } else {
+      gene_mutation_counts[["primary"]][gene] <- 0
+    }
+    
+    if (nrow(metastatic_gene_muts) > 0) {
+      gene_mutation_counts[["metastatic"]][gene] <- nrow(metastatic_gene_muts)
+    } else {
+      gene_mutation_counts[["metastatic"]][gene] <- 0
+    }
+  }
+  
+  # Calculate fraction of mutated genes against all samples for the subtype
+  mutation_freqs[["primary"]][[subtype]] <- as.list(unlist(gene_mutation_counts[["primary"]]) /
+                                                      length(primary_sample_ids))
+  mutation_freqs[["metastatic"]][[subtype]] <- as.list(unlist(gene_mutation_counts[["metastatic"]]) /
+                                                         length(metastatic_sample_ids))
+  
+  # Find the CNAs in the primary and metastatic samples
+  primary_subtype_cna <- cna_data[c("Hugo_Symbol", primary_sample_ids)]
+  metastatic_subtype_cna <- cna_data[c("Hugo_Symbol", metastatic_sample_ids)]
+  
+  # Get the code representing the subtype name, e.g. COAD for Colorectal MSS
+  subtype_code <- subtype_samples$ONCOTREE_CODE[1]
+  
+  # Find CNA alterations that are oncogenic according to OncoKB
+  onco_cna_rows <- oncogenic_cna[which(oncogenic_cna$CANCER_TYPE == subtype_code), ]
+  onco_cna_primary <- onco_cna_rows[which(onco_cna_rows$SAMPLE_ID %in% primary_sample_ids), ]
+  onco_cna_metastatic <- onco_cna_rows[which(onco_cna_rows$SAMPLE_ID %in% metastatic_sample_ids), ]
+  
+  onco_primary_amps <- onco_cna_primary[which(onco_cna_primary$ALTERATION == "Amplification"), ]
+  onco_metastatic_amps <- onco_cna_metastatic[which(onco_cna_metastatic$ALTERATION == "Amplification"), ]
+  onco_primary_dels <- onco_cna_primary[which(onco_cna_primary$ALTERATION == "Deletion"), ]
+  onco_metastatic_dels <- onco_cna_metastatic[which(onco_cna_metastatic$ALTERATION == "Deletion"), ]
+  
+  # Calculate the amplification and deletion frequency per gene
+  gene_amp_counts <- list(primary = list(), metastatic = list())
+  gene_del_counts <- list(primary = list(), metastatic = list())
+  
+  # Iterate over rows
+  for (idx in 1:nrow(primary_subtype_cna)) {
+    # Get the gene for the row
+    gene <- primary_subtype_cna[idx,]$Hugo_Symbol
+    
+    if (gene %in% onco_primary_amps$HUGO_SYMBOL | gene %in% onco_metastatic_amps$HUGO_SYMBOL) {
+      # Count number of samples with CNA > 0 (amplification) and CNA < 0 (deletion)
+      gene_amp_counts[["primary"]][gene] <- sum(unlist(primary_subtype_cna[idx, -1]) > 0)
+      gene_amp_counts[["metastatic"]][gene] <- sum(unlist(metastatic_subtype_cna[idx, -1]) > 0)
+    }
+    if (gene %in% onco_primary_dels$HUGO_SYMBOL | gene %in% onco_metastatic_dels$HUGO_SYMBOL) {
+      gene_del_counts[["primary"]][gene] <- sum(unlist(primary_subtype_cna[idx, -1]) < 0)
+      gene_del_counts[["metastatic"]][gene] <- sum(unlist(metastatic_subtype_cna[idx, -1]) < 0)
+    }
+  }
+
+  # Record the amplification and deletion frequencies
+  amp_freqs[["primary"]][[subtype]] <- as.list(unlist(gene_amp_counts[["primary"]]) /
+                                                 length(primary_sample_ids))
+  amp_freqs[["metastatic"]][[subtype]] <- as.list(unlist(gene_amp_counts[["metastatic"]]) /
+                                                    length(metastatic_sample_ids))
+  del_freqs[["primary"]][[subtype]] <- as.list(unlist(gene_del_counts[["primary"]]) /
+                                                 length(primary_sample_ids))
+  del_freqs[["metastatic"]][[subtype]] <- as.list(unlist(gene_del_counts[["metastatic"]]) /
+                                                    length(metastatic_sample_ids))
+  
+  # Find the fusions in the primary and metastatic samples
+  primary_subtype_fusions <- oncogenic_fusions[which(oncogenic_fusions$Tumor_Sample_Barcode %in% primary_sample_ids), ]
+  metastatic_subtype_fusions <- oncogenic_fusions[which(oncogenic_fusions$Tumor_Sample_Barcode %in% metastatic_sample_ids), ]
+  
+  # Find genes with fusions in primary samples but not metastatic
+  zero_primary_names <- setdiff(metastatic_subtype_fusions$Hugo_Symbol, primary_subtype_fusions$Hugo_Symbol)
+  # Find genes with fusions in metastatic samples but not primary
+  zero_metastatic_names <- setdiff(primary_subtype_fusions$Hugo_Symbol, metastatic_subtype_fusions$Hugo_Symbol)
+  
+  # Create placeholder lists for genes not found in either primary / metastatic samples
+  zero_primary_genes <- rep(0, length(zero_primary_names))
+  zero_metastatic_genes <- rep(0, length(zero_metastatic_names))
+  names(zero_primary_genes) <- zero_primary_names
+  names(zero_metastatic_genes) <- zero_metastatic_names
+  
+  # Calculate fraction of fusion genes against all samples for the subtype
+  primary_fusion_frequencies <- as.list(table(primary_subtype_fusions$Hugo_Symbol) / length(primary_sample_ids))
+  metastatic_fusion_frequencies <- as.list(table(metastatic_subtype_fusions$Hugo_Symbol) / length(metastatic_sample_ids))
+  
+  # Add genes not found in either primary / metastatic for comparision
+  primary_fusion_frequencies <- append(primary_fusion_frequencies, zero_primary_genes)
+  metastatic_fusion_frequencies <- append(metastatic_fusion_frequencies, zero_metastatic_genes)
+  
+  # Record the frequencies
+  fusion_freqs[["primary"]][[subtype]] <- primary_fusion_frequencies
+  fusion_freqs[["metastatic"]][[subtype]] <- metastatic_fusion_frequencies
+}
+
+# Form data of all oncogenic alterations by combine mutation, amplification, deletion and fusion data per subtype
+oncogenic_alteration_df <- data.frame()
+
+for (subtype in all_subtypes) {
+  # Get the alterative subtype name
+  display_name <- table_s1a[which(table_s1a$curated_subtype_display == subtype), ][[1]]
+  
+  if (length(mutation_freqs[["primary"]][[subtype]]) != 0) {
+    # Add mutation frequencies for each subtype
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Mutation",
+                                                gene = names(mutation_freqs[["primary"]][[subtype]]),
+                                                alteration = paste0(names(mutation_freqs[["primary"]][[subtype]]), "_", "mut"),
+                                                primary_freq = unlist(mutation_freqs[["primary"]][[subtype]]),
+                                                metastatic_freq = unlist(mutation_freqs[["metastatic"]][[subtype]])))
+  }
+  
+  # Check that amplifications found
+  if (length(amp_freqs[["primary"]][[subtype]]) != 0) {
+    # Add amplification frequencies
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Amplification",
+                                                gene = names(amp_freqs[["primary"]][[subtype]]),
+                                                alteration = paste0(names(amp_freqs[["primary"]][[subtype]]), "_", "Amplification"),
+                                                primary_freq = unlist(amp_freqs[["primary"]][[subtype]]),
+                                                metastatic_freq = unlist(amp_freqs[["metastatic"]][[subtype]])))
+  }
+  
+  # Check that deletions found
+  if (length(del_freqs[["primary"]][[subtype]]) != 0) {
+    # Add deletion frequencies
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Deletion",
+                                                gene = names(del_freqs[["primary"]][[subtype]]),
+                                                alteration = paste0(names(del_freqs[["primary"]][[subtype]]), "_", "Deletion"),
+                                                primary_freq = unlist(del_freqs[["primary"]][[subtype]]),
+                                                metastatic_freq = unlist(del_freqs[["metastatic"]][[subtype]])))
+  }
+  
+  # Check that fusions found
+  if (length(fusion_freqs[["primary"]][[subtype]]) != 0) {
+    
+    primary_fusions <- unlist(fusion_freqs[["primary"]][[subtype]])
+    metastatic_fusions <- unlist(fusion_freqs[["metastatic"]][[subtype]])
+    
+    # Rearrange so primary and metastatic frequencies per gene are in the same order
+    metastatic_fusions <- metastatic_fusions[order(match(names(metastatic_fusions), names(primary_fusions)))]
+    
+    # Add fusion frequencies
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Fusion",
+                                                gene = names(primary_fusions),
+                                                alteration = paste0(names(primary_fusions), "_", "fusion"),
+                                                primary_freq = primary_fusions,
+                                                metastatic_freq = metastatic_fusions))
+  }
+}
+# Reset row names to numbers
+rownames(oncogenic_alteration_df) <- 1:nrow(oncogenic_alteration_df)
+
+# Form a dataframe of recurrent oncogenic alterations 
+recurrent_onco_alts <- data.frame()
+
+for (r in 1:nrow(oncogenic_alteration_df)) {
+  # Get the row for an alteration
+  alteration_row <- oncogenic_alteration_df[r,]
+  
+  # Record alteration if present in at least 5% of either primary or metastatic samples
+  if (alteration_row["primary_freq"] > 0.05 | alteration_row["metastatic_freq"] > 0.05) {
+    recurrent_onco_alts <- rbind(recurrent_onco_alts, alteration_row)
+  }
+}
+
+# Find rows with oncogenic alterations, i.e. amplifications, mutations, deletions, fusions
+table_oncogenic <- removeEmptyCols(table_s2a[which(table_s2a$alteration_type == "oncogenic alteration"),])
+
+# Find significant alterations with q-value < 0.05
+significant_alts <- table_oncogenic[which(table_oncogenic$qval < 0.05),]
+significant_alterations <- data.frame()
+
+for (subtype_display in unique(recurrent_onco_alts$subtype_display)) {
+  subtype_alts <- significant_alts[which(significant_alts$tumor_type == subtype_display), ]
+  
+  if (nrow(subtype_alts) > 0) {
+    # Record the significant alterations
+    subtype_recurrent_alts <- recurrent_onco_alts[which(recurrent_onco_alts$subtype_display == subtype_display), ]
+    significant_alterations <- rbind(significant_alterations,
+                                     subtype_recurrent_alts[which(subtype_recurrent_alts$alteration %in%
+                                                                    subtype_alts$alteration),])
+  }
+}
+
+# List tumour types to plot
+tumour_types <- unique(significant_alterations$subtype_display)
+
+# Create dataframe to plot the alterations per tumour
+alteration_plot_df <- data.frame()
+
+for (tumour in tumour_types) {
+  # Get the alterations for the tumour
+  tumour_alts <- significant_alterations[which(significant_alterations$subtype_display == tumour), ]
+  # Find the plot background colour
+  tumour_colour <- table_s1a[which(table_s1a$curated_subtype == tumour), ]$color_subtype
+  tumour_display_name <- table_s1a[which(table_s1a$curated_subtype == tumour), ]$curated_subtype_display
+  
+  # Count the number of primary samples
+  subtype <- tumour_alts$subtype[1]
+  primary_n <- nrow(samples_data[which(samples_data$SUBTYPE == subtype &
+                                         samples_data$SAMPLE_TYPE == "Primary"),])
+  
+  for (r in 1:nrow(tumour_alts)) {
+    # Get the row for an alteration
+    alteration_row <- tumour_alts[r,]
+    
+    # Get the alteration frequency for primary and metastatic samples
+    primary_freq <- alteration_row["primary_freq"]
+    metastasis_freq <- alteration_row["metastatic_freq"]
+    
+    if (primary_freq > metastasis_freq) {
+      higher_in_metastasis <- FALSE
+    } else {
+      higher_in_metastasis = TRUE
+    }
+    
+    # Split alteration into name and type
+    # E.g. CCND1_FGF19_Amplification becomes "CCND1 FGF19" and "Amplification"
+    alteration <- strsplit(alteration_row$alteration, split = '_', fixed = TRUE)
+    alt_name <- paste(alteration[[1]][1:(length(alteration[[1]])-1)])
+    alt_type <- alteration[[1]][length(alteration[[1]])]
+    
+    # Set the colour of the triangle to plot based on the alteration type
+    if (tolower(alt_type) == "mut") {
+      triangle_color <- "green"
+    } else if (tolower(alt_type) == "amplification") {
+      triangle_color <- "red"
+    } else if (tolower(alt_type) == "deletion") {
+      triangle_color <- "blue"
+    } else if (tolower(alt_type) == "purple") {
+    } else {
+      triangle_color <- "purple"
+    }
+    
+    # Append a row to the alteration dataframe
+    alteration_plot_df <- rbind(alteration_plot_df,
+                                data.frame(tumour_type = tumour_display_name,
+                                           primary_n = primary_n,
+                                           alteration_name = alt_name,
+                                           alteration_type = alt_type,
+                                           alternation_freq1 = min(primary_freq, metastasis_freq),
+                                           alternation_freq2 = max(primary_freq, metastasis_freq),
+                                           higher_in_metastasis = higher_in_metastasis,
+                                           bg_color = tumour_colour,
+                                           triangle_color = triangle_color))
+  }
+}
+
+# First reorder rows from low to high by lowest alteration frequency
+alteration_plot_df <- alteration_plot_df[order(alteration_plot_df$alternation_freq1),]
+
+# Then reorder rows by number of alterations per tumour
+alteration_plot_df <- transform(alteration_plot_df, freq = ave(seq(nrow(alteration_plot_df)),
+                                                               tumour_type, FUN = length))
+alteration_plot_df <- alteration_plot_df[order(-alteration_plot_df$freq), ]
+alteration_plot_df$freq <- NULL
+
+# Capitalise first letter of each alteration type, e.g. "deletion" -> "Deletion"
+alteration_plot_df$alteration_type <- str_to_title(alteration_plot_df$alteration_type)
+# Replace "Mut" with "Mutation"
+alteration_plot_df$alteration_type <- str_replace_all(alteration_plot_df$alteration_type,
+                                                      "Mut", "Mutation")
+
+# Save plot data to file
+write.csv(alteration_plot_df, file = "Plot_2/Figure2C/figure2c_plot_info.csv", row.names = FALSE)
+
+# Set list of formal tumour names
+all_tumour_names <- unique(alteration_plot_df$tumour_type)
+
+# Record each plot in a list
+tumour_alt_plots <- list()
+
+for (i in 1:length(all_tumour_names)) {
+  # Get the name as an index
+  tumour_name <- all_tumour_names[i]
+  
+  # Find the rows for the tumour type
+  tumour_alts <- alteration_plot_df[which(alteration_plot_df$tumour_type == tumour_name),]
+  # Convert columns to factors to keep order
+  tumour_alts$triangle_color <- factor(tumour_alts$triangle_color,
+                                          levels = unique(tumour_alts$triangle_color))
+  tumour_alts$alteration_name  <- factor(tumour_alts$alteration_name,
+                                         levels = unique(tumour_alts$alteration_name))
+  tumour_alts$alteration_type  <- factor(tumour_alts$alteration_type,
+                                         levels = unique(tumour_alts$alteration_type))
+  tumour_alts$higher_in_metastasis  <- factor(tumour_alts$higher_in_metastasis,
+                                         levels = unique(tumour_alts$higher_in_metastasis))
+  
+  if (tumour_alts$higher_in_metastasis[1]) {
+    # Set right and left facing triangles
+    triangle_shapes <- c("\u25C4", "\u25BA")
+    triangle_direction <- c("Higher in\nmetastasis", "Lower in\nMetastasis")
+  } else {
+    # Set left and right facing triangles
+    triangle_shapes <- c("\u25BA", "\u25C4")
+    triangle_direction <- c("Higher in metastasis", "Lower in Metastasis")
+  }
+  
+  # Create the plot of alteration frequency for the tumour type
+  alt_plot <- ggplot(data = tumour_alts,
+                     aes(x = alternation_freq1 * 100,
+                         y = alteration_name,
+                         xmin = alternation_freq1, xmax = alternation_freq2,
+                         color = alteration_type, shape = higher_in_metastasis)) +
+    geom_point(size = 6) +
+    geom_text(aes(label = round(alternation_freq1, 2) * 100), # Add text to left and right of arrows
+              color = "black", size = 3, hjust = 3, vjust = 0.5) +
+    geom_text(aes(label = round(alternation_freq2, 2) * 100), 
+              color = "black", size = 3, hjust = -3, vjust = 0.5) +
+    scale_shape_manual(values = triangle_shapes, # Set triangle shapes
+                       labels = triangle_direction) +
+    scale_color_manual(values = as.vector(unique(tumour_alts$triangle_color))) +
+    scale_x_continuous(position = 'top', limits = c(0, 100),
+                       expand = c(0.1, 0.1), labels = function(x) paste0(x, "%")) +
+    labs(title = paste(tumour_alts$tumour_type[1], " (", tumour_alts$primary_n[1], ")", sep = ""), 
+         x = "Alternation frequency", y = "") +
+    theme(plot.title = element_text(size = 12, color = tumour_alts$bg_color),
+          panel.background = element_rect(fill = alpha(tumour_alts$bg_color, 0.5), # Set background colour
+                                          color = tumour_alts$bg_color),
+          panel.grid.major.x = element_blank(), # Hide x-axis background grid lines
+          panel.grid.minor.x = element_blank(),
+          panel.grid.major.y = element_line(linetype = "dotted", size = 0.7), # Set style of y-axis background grid lines
+          panel.grid.minor.y = element_line(linetype = "dotted", size = 0.7)) +
+    guides(color = guide_legend(title = ""),
+           shape = guide_legend(title = ""))
+  alt_plot
+  tumour_alt_plots[[tumour_name]] <- alt_plot
+}
+
+cairo_pdf("Plot_2/Figure2C/Figure2C.pdf", width = 14, height = 12)
+ggarrange(plotlist = tumour_alt_plots, heights = c(4,2.5,1.5,1.5), 
+          common.legend = TRUE, legend = "bottom")
+graphics.off()
+@
+
+\section{Figure 3}
+\subsection{Figure 3A}
+The genomic features FGA and TMB were considered significantly correlated with metastatic burden based on two conditions. For the first, Spearman's correlation between the FGA/TMB and the number of metastatic sites is significant if the q-value is less than 0.05, in which
+q-values are p-values adjusted for false discovery rate. The IQR value from spearman's and the IQR are plotted on the point range graph per subtype \\
+
+Secondly, the feature's coefficient is significant with p-value < 0.05 when used as a predictive variable in a linear regression model. Before running regression, power transformations were performed on FGA and TMB with Tukey's ladder of powers to harmonize their distributions, then they were normalised between 0 - 1. Multivariable linear regression was run to model metastatic site count using the feature and sample type as coefficients, e.g. MET_SITE_COUNT ~ SAMPLE_TYPE + FGA. This condition is required so that the ratio of primary to metastatic samples doesn't act as a confounding factor as it has an association with metastatic burden. If both conditions are met, the point for the subtype FGA/TMB combination is coloured.
+
+<<echo = T, eval = F>>=
+library(readxl)
+library(DescTools)
+library(ggplot2)
+library(rcompanion)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Specify the column names for FGA and TMB in the sample data
+measure_columns <- list(fga = "Our_FGA", tmb = "Our_TMB")
+
+# Open calculated TMB and FGA data
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                         header = TRUE, fill = TRUE)
+
+# Get columns of interest
+samples_data <- samples_data[c("SAMPLE_ID", "SUBTYPE", "SAMPLE_TYPE", "PRIMARY_SITE",
+                               "METASTATIC_SITE", "MET_SITE_COUNT",
+                               measure_columns[["fga"]], measure_columns[["tmb"]])]
+
+# Open data with plot colours
+table_s1a <- read_excel("Tables_S1-4/Table_S1.xlsx", sheet = 1, skip = 2)
+
+# Calculate Spearman's correlation coefficient between FGA/TMB and mutational burden
+calculateSpearmans <- function(data, colour = "black") {
+  fga_correlation <- SpearmanRho(x = data[[measure_columns[["fga"]]]],
+                                 y = data$MET_SITE_COUNT,
+                                 conf.level = 0.95)
+  tmb_correlation <- SpearmanRho(x = data[[measure_columns[["tmb"]]]],
+                                 y = data$MET_SITE_COUNT,
+                                 conf.level = 0.95)
+  
+  # Extract p-values
+  fga_pvalue <- cor.test(data[[measure_columns[["fga"]]]],
+                         data$MET_SITE_COUNT,
+                         method = "spearman",
+                         exact = FALSE)$p.value
+  tmb_pvalue <- cor.test(data[[measure_columns[["tmb"]]]],
+                         data$MET_SITE_COUNT,
+                         method = "spearman",
+                         exact = FALSE)$p.value
+
+  # Add results to dataframe
+  spearmans_data <- data.frame(SUBTYPE = data$SUBTYPE[1], # Subtype name
+                               N.SAMPLES = nrow(data), # Subtype size
+                               FGA.RHO = unname(fga_correlation["rho"]), # FGA spearmans
+                               FGA.CI.LOW = unname(fga_correlation["lwr.ci"]), # FGA confidence interval lower
+                               FGA.CI.HIGH = unname(fga_correlation["upr.ci"]), # FGA confidence interval upper
+                               FGA.PVAL = fga_pvalue, # FGA p-value
+                               TMB.RHO = unname(tmb_correlation["rho"]), # TMB spearmans
+                               TMB.CI.LOW = unname(tmb_correlation["lwr.ci"]), # TMB confidence interval lower
+                               TMB.CI.HIGH = unname(tmb_correlation["upr.ci"]), # TMB confidence interval upper
+                               TMB.PVAL = tmb_pvalue,
+                               COLOUR = colour) # TMP p-value
+  
+  return(spearmans_data)
+}
+
+# Find the 50 subtype names
+cancer_subtypes <- unique(samples_data$SUBTYPE)
+metastatic_samples <- samples_data[which(samples_data$MET_SITE_COUNT > 0), ]
+
+# Calculate Spearman's correlation across all samples
+spearmans_df <- calculateSpearmans(metastatic_samples)
+spearmans_df$SUBTYPE <- "PanCan"
+
+# Add Spearman's correlation for each subtype
+for (subtype in cancer_subtypes) {
+  
+  # Find samples for the subtype
+  subtype_samples <- metastatic_samples[which(metastatic_samples$SUBTYPE == subtype), ]
+  # Set the plot colour
+  subtype_colour <- table_s1a[which(table_s1a$curated_subtype_display == subtype), ]$color_subtype
+  
+  # Add row for spearman's correlation with FGA and TMB
+  spearmans_df <- rbind(spearmans_df,
+                        calculateSpearmans(subtype_samples, colour = subtype_colour))
+}
+
+# Adjust p-values for false discovery rate
+spearmans_df$FGA.QVAL <- p.adjust(spearmans_df$FGA.PVAL, method = "fdr")
+spearmans_df$TMB.QVAL <- p.adjust(spearmans_df$TMB.PVAL, method = "fdr")
+
+# Mark as significant if q-value < 0.05
+spearmans_df$FGA.SIGNIFICANT <- spearmans_df$FGA.QVAL < 0.05
+spearmans_df$TMB.SIGNIFICANT <- spearmans_df$TMB.QVAL < 0.05
+
+# Find subtypes that are significant
+significant_subtypes_df <- spearmans_df[which(spearmans_df$FGA.SIGNIFICANT |
+                                                spearmans_df$TMB.SIGNIFICANT), ]
+
+# Set default colours for non-significant values
+spearmans_df$FGA.COLOUR <- "grey"
+spearmans_df$TMB.COLOUR <- "grey"
+
+# Iterate through significant subtypes
+for (r in row.names(significant_subtypes_df)) {
+  # Set the name of the subtype
+  subtype <- spearmans_df[r,]$SUBTYPE
+  
+  if (subtype != "PanCan") {
+    # Find samples for the subtype
+    subtype_samples <- samples_data[which(samples_data$SUBTYPE == subtype), ]
+
+    # Repeat for FGA and TMB
+    for (genomic_feature in unlist(measure_columns)) {
+
+      # Perform power transformations of FGA / TMB with Tukey's ladder of powers
+      tukey_features <- transformTukey(subtype_samples[[genomic_feature]],
+                                       plotit = FALSE, quiet = TRUE)
+      # Normalise between 0 to 1 by subtracting the minimum and dividing by the maximum
+      normalised_features <- tukey_features - min(tukey_features)
+      normalised_features <- normalised_features / max(normalised_features)
+
+      # Add the normalised feature to the subtype data
+      if (genomic_feature == measure_columns[["fga"]]) {
+        norm_column <- "NORM_FGA"
+      } else {
+        norm_column <- "NORM_TMB"
+      }
+      subtype_samples[norm_column] <- normalised_features
+    
+      # Run linear regression of metastatic burden with FGA/TMB as the predictive variable
+      # and adjust for sample type
+      regression_results <- lm(as.formula(paste("MET_SITE_COUNT ~ SAMPLE_TYPE +", norm_column)),
+                               data = subtype_samples)
+      # Get the p-value for the FGA/TMB coefficient and check if significant
+      regression_coefficients <- data.frame(summary(regression_results)$coefficients)
+      coefficient_p_value <- regression_coefficients[norm_column,]$Pr...t..
+      regression_significant <- coefficient_p_value < 0.05
+
+      if (genomic_feature == measure_columns[["fga"]]) {
+        spearmans_df[r,]$FGA.SIGNIFICANT <- spearmans_df[r,]$FGA.SIGNIFICANT & regression_significant
+      } else {
+        spearmans_df[r,]$TMB.SIGNIFICANT <- spearmans_df[r,]$TMB.SIGNIFICANT & regression_significant
+      }
+    }
+  }
+  
+  # Set the row for the subtype
+  subtype_row <- spearmans_df[r,]
+  
+  # Set colours for significant values
+  if (subtype_row$FGA.SIGNIFICANT) {
+    spearmans_df[r,]$FGA.COLOUR <- subtype_row$COLOUR
+  }
+  if (subtype_row$TMB.SIGNIFICANT) {
+    spearmans_df[r,]$TMB.COLOUR <- subtype_row$COLOUR
+  }
+}
+
+# Rearrange data for plotting
+spearman_plot_data <- data.frame(subtype = rep(paste(spearmans_df$SUBTYPE,
+                                                     " (", spearmans_df$N.SAMPLES,
+                                                     ")", sep = ""), 2),
+                                 type = c(rep("FGA", nrow(spearmans_df)),
+                                          rep("TMB", nrow(spearmans_df))),
+                                 rho = c(spearmans_df$FGA.RHO,
+                                         spearmans_df$TMB.RHO),
+                                 qval = c(spearmans_df$FGA.QVAL,
+                                          spearmans_df$TMB.QVAL),
+                                 conf_lower = c(spearmans_df$FGA.CI.LOW,
+                                                      spearmans_df$TMB.CI.LOW),
+                                 conf_upper = c(spearmans_df$FGA.CI.HIGH,
+                                                spearmans_df$TMB.CI.HIGH))
+
+# Set subtype as a factor so order remains the same as in the dataframe
+spearman_plot_data$subtype <- factor(spearman_plot_data$subtype,
+                                     levels = rev(paste(spearmans_df$SUBTYPE,
+                                                    " (", spearmans_df$N.SAMPLES,
+                                                    ")", sep = "")))
+
+# Plot point range with spearman's rho
+pdf(file = "Plot_3/Figure3A/Figure_3A.pdf", width = 7, height = 10)
+ggplot(spearman_plot_data, aes(x = subtype, y = rho, group = type, 
+                               ymin = conf_lower, ymax = conf_upper, # Confidence interval
+                               color = factor(row.names(spearman_plot_data), # Set as factor so order is the same
+                                              levels = row.names(spearman_plot_data)),
+                               shape = type)) +
+  geom_hline(yintercept = 0, color = "white", size = 1) + # Set line through y-axis center
+  geom_pointrange(position = position_dodge(width = -1)) + # Add space between grouped points
+  coord_flip() + # Show spearman's rho on x-axis and subtype on y-axis
+  labs(title = "Spearman's correlation", x = "", y = "",
+       caption = expression("" %<-% "Lower with increasing metastatic burden      Higher with increasing metastatic burden" %->% "")) +
+  theme(plot.title = element_text(size = 14, hjust = 0.5, vjust = -1), # Set title position
+        plot.caption.position = "plot", # Set caption position and size
+        plot.caption = element_text(hjust = 1, size = 8),
+        axis.text.y = element_text(hjust = 1, colour = rev(spearmans_df$COLOUR)), # Colour labels
+        legend.position = "bottom",
+        panel.grid.major.x = element_blank(), # Hide x-axis background grid lines
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(linetype = "dotted", size = 0.8), # Set style of y-axis background grid lines
+        panel.grid.minor.y = element_line(linetype = "dotted", size = 0.8)) + 
+  scale_y_continuous(position = "right", limits = c(-0.6, 0.6)) + # Set y-axis limits
+  scale_color_manual(values = c(spearmans_df$FGA.COLOUR, spearmans_df$TMB.COLOUR), # Colour points
+                     guide ='none') +
+  scale_shape_manual(name = "", values = c(16, 18)) # Set FGA and TMB point shapes
+dev.off()
+@
+
+\subsection{Figure 3B}
+FGA and TMB for primary/metastatic samples with metastatic burden between 1 to 6 or more was shown as violin plots. Primary are plotted on the left, and metastatic on the right. This shows the correlation between the number of metastatic sites and FGA/TMB for the whole dataset and for specific subtypes with significant differences.
+
+<<echo = T, eval = F>>=
+library(ggplot2)
+library(vioplot)
+
+setwd("C:/Users/tw556/Documents/GitHub/Genomics-II-Group/")
+
+# Open calculated TMB and FGA data
+samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
+                          header = TRUE, fill = TRUE)
+
+# Specify the subtypes to plot and their colours
+subtypes <- c(pancancer = "PanCan", prostate = "Prostate Adenocarcinoma", 
+              uterine = "Uterine Hypermutated", colorectal = "Colorectal MSS")
+subtype_colours <- list(pancancer = "#383838", prostate = "#be1e2d",
+                        uterine = "#946d2c", colorectal = "#007eb5")
+
+# Find TMB and FGA for samples with 1 to 6+ metastatic sites
+metastaticStats <- function(data, metastastic_counts = 1:6) {
+  
+  for (count in metastastic_counts) {
+    if (count >= metastastic_counts[length(metastastic_counts)]) {
+      # Find samples with metastatic burden >= 6
+      meta_count_samples <- data[which(data$MET_SITE_COUNT >= count), ]
+    } else {
+      # Find samples with metastatic burden < 6
+      meta_count_samples <- data[which(data$MET_SITE_COUNT == count), ]
+    }
+    
+    # Split into primary and metastatic samples
+    primary_meta_samples <- meta_count_samples[which(meta_count_samples$SAMPLE_TYPE == "Primary"),]
+    metastasis_meta_samples <- meta_count_samples[which(meta_count_samples$SAMPLE_TYPE == "Metastasis"),]
+    
+    if (count == metastastic_counts[1]) {
+      # Initialise data for first count
+      tmb_primary <- data.frame(primary_meta_samples$Our_TMB)
+      tmb_metastasis <- data.frame(metastasis_meta_samples$Our_TMB)
+      fga_primary <- data.frame(primary_meta_samples$Our_FGA)
+      fga_metastasis <- data.frame(metastasis_meta_samples$Our_FGA)
+      
+    } else {
+      # Otherwise add columns to data
+      tmb_primary <- merge(tmb_primary, data.frame(primary_meta_samples$Our_TMB),
+                           by = "row.names", all = TRUE)[-1]
+      tmb_metastasis <- merge(tmb_metastasis, data.frame(metastasis_meta_samples$Our_TMB),
+                              by = "row.names", all = TRUE)[-1]
+      fga_primary <- merge(fga_primary, data.frame(primary_meta_samples$Our_FGA),
+                           by = "row.names", all = TRUE)[-1]
+      fga_metastasis <- merge(fga_metastasis, data.frame(metastasis_meta_samples$Our_FGA),
+                              by = "row.names", all = TRUE)[-1]
+    }
+    
+    # Reset column names to prevent duplicates caused by merge
+    colnames(tmb_primary) <- 1:count
+    colnames(tmb_metastasis) <- 1:count
+    colnames(fga_primary) <- 1:count
+    colnames(fga_metastasis) <- 1:count
+  }
+  
+  return(list(tmb_primary = tmb_primary,
+              tmb_metastasis = tmb_metastasis,
+              fga_primary = fga_primary,
+              fga_metastasis = fga_metastasis))
+}
+
+# Get TMB and FGA per subtype, split by metastatic burden and primary/metastasis
+subtype_stats <- list(pancancer = metastaticStats(samples_data),
+                      prostate = metastaticStats(samples_data[which(samples_data$SUBTYPE == subtypes[2]), ]),
+                      uterine = metastaticStats(samples_data[which(samples_data$SUBTYPE == subtypes[3]), ]),
+                      colorectal = metastaticStats(samples_data[which(samples_data$SUBTYPE == subtypes[4]), ]))
+
+# Create 3 by two subplots
+par(mfrow = c(4,2), mar = c(3, 4, 4, 2), mgp = c(2, 1, 0))
+
+for (subtype in names(subtype_stats)) {
+
+  # Set the plot colours based on subtype
+  colour_primary <- "white"
+  colour_metastasis <- as.character(subtype_colours[subtype])
+  plot_title = as.character(subtypes[subtype])
+  
+  if (subtype == "colorectal") {
+    x_label = "Metastatic Burden"
+  } else {
+    x_label = ""
+  }
+  
+  # Plot both FGA or TMB
+  for (type in c("FGA", "TMB")) {
+    
+    # Select the type of data
+    if (type == "TMB") {
+      primary_data <- subtype_stats[[subtype]]$tmb_primary
+      metastasis_data <- subtype_stats[[subtype]]$tmb_metastasis
+      title_postfix <- "- TMB (mut/Mb)"
+      add_legend <- TRUE
+    } else {
+      primary_data <- subtype_stats[[subtype]]$fga_primary * 100
+      metastasis_data <- subtype_stats[[subtype]]$fga_metastasis * 100
+      title_postfix <- "- FGA (%)"
+      add_legend <- FALSE
+    }
+    
+    # Plot split violin plots
+    vioplot(primary_data,
+            colMed = "white",
+            side = "left",
+            col = colour_primary,
+            xlab = x_label,
+            main = paste(plot_title, title_postfix),
+            pchMed = 20)
+    vioplot(metastasis_data,
+            colMed = "white",
+            side = "right",
+            col = colour_metastasis,
+            pchMed = 20,
+            add = TRUE)
+    
+    # Add legend only to right plots
+    if (add_legend) {
+      legend("topright",
+             legend = c("Primary", "Metastasis"),
+             fill = c(colour_primary, colour_metastasis),
+             cex = 0.8)
+    }
+  }
+}
+@
+
+\subsection{Figure 3C}
+
+<<echo = T, eval = F>>=
+CODE HERE
+@
+
+\section{Figure 4}
+
+<<echo = T, eval = F>>=
+CODE HERE
+@
+
+\end{document}
