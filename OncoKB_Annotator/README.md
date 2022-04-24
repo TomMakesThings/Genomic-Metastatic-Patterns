@@ -17,7 +17,9 @@ Install dependencies:
 
 Annotate mutations in the somatic MAF file "mutations_with_oncotree_codes.txt"
 
-`python OncoKB_Annotator\MafAnnotator.py -i Plot_2\OncoKB\mutations_with_oncotree_codes.txt -o Plot_2\OncoKB\oncokb_annotated_mutations.txt -b 44ceacf7-c7d2-4b85-ae72-e7ef71c0da55`
+```
+python OncoKB_Annotator\MafAnnotator.py -i Plot_2\OncoKB\mutations_with_oncotree_codes.txt -o Plot_2\OncoKB\oncokb_annotated_mutations.txt -b 44ceacf7-c7d2-4b85-ae72-e7ef71c0da55
+```
 
 # Repositoy README
 
