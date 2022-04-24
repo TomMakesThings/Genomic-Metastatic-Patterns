@@ -15,10 +15,10 @@ if (add_oncotree_codes) {
   samples_data <- read.table(file = "Data/data_clinical_sample.txt", sep = '\t', 
                              quote = "", header = TRUE, fill = TRUE)
   # Open mutation data
-  mutations <- removeEmptyCols(read.table(file = "Data/data_mutations.txt", 
+  mutations <- removeEmptyCols(read.delim(file = "Data/data_mutations.txt", 
                                           header = TRUE, fill = TRUE))
   
-  mutation_samples <- mutations[c("dbSNP_RS", "dbSNP_Val_Status")]
+  mutation_samples <- mutations["Tumor_Sample_Barcode"]
   
   n_mutations <- nrow(mutations)
   
@@ -30,17 +30,8 @@ if (add_oncotree_codes) {
   
   # Add OncoTree codes for each mutation
   for (r in 1:n_mutations) {
-    mutation <- mutation_samples[r,]
-    
     # Find the sample ID for the mutation
-    if (substr(mutation$dbSNP_RS[[1]], 1, 1) == "P") {
-      sample_id <- mutation$dbSNP_RS[[1]]
-    } else if (substr(mutation$dbSNP_Val_Status[[1]], 1, 1) == "P") {
-      sample_id <- mutation$dbSNP_Val_Status[[1]]
-    } else {
-      # One mutation does not have a sample ID
-      sample_id <- NA
-    }
+    sample_id <- mutation_samples[r,]
     
     if (!is.na(sample_id)) {
       # Find and record the OncoTree code and sample ID
@@ -52,16 +43,21 @@ if (add_oncotree_codes) {
     }
   }
   
-  mutations$OncoTree_Code <- oncotree_codes
-  mutations$Sample_ID <- sample_ids
-  mutations$Subtype <- subtypes
-  mutations$Sample_Type <- sample_types
+  # Set the columns required for MafAnnotator
+  oncokb_format <- mutations[c("Hugo_Symbol", "Variant_Classification",
+                               "Tumor_Sample_Barcode", "HGVSp_Short",
+                               "Start_Position", "End_Position")]
+  oncokb_format$Sample_ID <- sample_ids
+  oncokb_format$OncoTree_Code <- oncotree_codes
+  oncokb_format$Subtype <- subtypes
+  oncokb_format$Sample_Type <- sample_types
   
-  write.table(mutations, file = "Plot_2/OncoKB/mutations_with_oncotree_codes.txt",
+  # Save to file
+  write.table(oncokb_format, file = "Plot_2/OncoKB/mutations_with_oncotree_codes.txt",
               sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
 }
 
-oncokb_results <- read.table("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
+oncokb_results <- read.delim("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
                              header = TRUE, fill = TRUE, sep = "\t")
 
 # Open OncoKB annotated mutation data from zip file
