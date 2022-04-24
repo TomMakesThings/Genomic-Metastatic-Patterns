@@ -5,32 +5,42 @@ library(ggpubr)
 
 setwd("C:/Users/redds/Documents/GitHub/Genomics-II-Group/")
 
+# Remove NA columns from dataframe
+removeEmptyCols <- function(df) {
+  return(df[ ,colSums(is.na(df)) < nrow(df)])
+}
+
 # Open tables S1A and S2A 
 table_s1a <- data.frame(read_excel("Tables_S1-4/Table_S1.xlsx", sheet = 1, skip = 2))
 table_s2a <- data.frame(read_excel("Tables_S1-4/Table_S2.xlsx", sheet = 1, skip = 2))
+
 # Open calculated TMB and FGA data
 samples_data <- read.csv(file = "Plot_2/FGA/calculated_TMB_and_FGA.csv",
                          header = TRUE, fill = TRUE)
+# Open original CNA data
+cna_data <- read.delim(file = "Data/data_cna.txt", header = TRUE, fill = TRUE, sep = "\t")
+# Rename sample ID columns to match samples_data
+colnames(cna_data) <- gsub(x = colnames(cna_data), pattern = "\\.", replacement = "-")
+
 # Open mutation data annotated by OncoKB
-oncokb_mutations <- read.delim("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
-                               header = TRUE, fill = TRUE, sep = "\t")
+oncokb_mutations <- removeEmptyCols(read.delim("Plot_2/OncoKB/oncokb_annotated_mutations.txt",
+                                               header = TRUE, fill = TRUE, sep = "\t"))
 # Open CNA data
-cna_data <- read.delim(file = "Data/data_cna.txt",
-                       header = TRUE, fill = TRUE, sep = "\t")
+oncokb_cna <- removeEmptyCols(read.delim(file = "Plot_2/OncoKB/oncokb_annotated_cna.txt",
+                                         header = TRUE, fill = TRUE, sep = "\t"))
 # Open fusion data
-oncokb_fusions <- read.delim(file = "Plot_2/OncoKB/oncokb_annotated_fusions.txt",
-                             header = TRUE, fill = TRUE, sep = "\t")
+oncokb_fusions <- removeEmptyCols(read.delim(file = "Plot_2/OncoKB/oncokb_annotated_fusions.txt",
+                                             header = TRUE, fill = TRUE, sep = "\t"))
 
 # Find which alterations are oncogenic
 oncogenic_mutations <- oncokb_mutations[which(oncokb_mutations$ONCOGENIC == "Likely Oncogenic" |
                                                 oncokb_mutations$ONCOGENIC == "Oncogenic" ),]
+oncogenic_cna <- oncokb_cna[which(oncokb_cna$ONCOGENIC == "Likely Oncogenic" |
+                                    oncokb_cna$ONCOGENIC == "Oncogenic" ),]
 oncogenic_fusions <- oncokb_fusions[which(oncokb_fusions$ONCOGENIC == "Likely Oncogenic" |
                                             oncokb_fusions$ONCOGENIC == "Oncogenic" ),]
 # Drop columns to reduce size of data
 oncogenic_mutations <- oncogenic_mutations[c("Hugo_Symbol", "Tumor_Sample_Barcode", "ONCOGENIC")]
-# Rename sample ID columns to match samples_data
-colnames(cna_data) <- gsub(x = colnames(cna_data), pattern = "\\.", replacement = "-")
-
 
 # Create list of all subtypes
 all_subtypes <- unique(samples_data$SUBTYPE)
@@ -89,7 +99,20 @@ for (subtype in all_subtypes) {
   # Find the CNAs in the primary and metastatic samples
   primary_subtype_cna <- cna_data[c("Hugo_Symbol", primary_sample_ids)]
   metastatic_subtype_cna <- cna_data[c("Hugo_Symbol", metastatic_sample_ids)]
-
+  
+  # Get the code representing the subtype name, e.g. COAD for Colorectal MSS
+  subtype_code <- subtype_samples$ONCOTREE_CODE[1]
+  
+  # Find CNA alterations that are oncogenic according to OncoKB
+  onco_cna_rows <- oncogenic_cna[which(oncogenic_cna$CANCER_TYPE == subtype_code), ]
+  onco_cna_primary <- onco_cna_rows[which(onco_cna_rows$SAMPLE_ID %in% primary_sample_ids), ]
+  onco_cna_metastatic <- onco_cna_rows[which(onco_cna_rows$SAMPLE_ID %in% metastatic_sample_ids), ]
+  
+  onco_primary_amps <- onco_cna_primary[which(onco_cna_primary$ALTERATION == "Amplification"), ]
+  onco_metastatic_amps <- onco_cna_metastatic[which(onco_cna_metastatic$ALTERATION == "Amplification"), ]
+  onco_primary_dels <- onco_cna_primary[which(onco_cna_primary$ALTERATION == "Deletion"), ]
+  onco_metastatic_dels <- onco_cna_metastatic[which(onco_cna_metastatic$ALTERATION == "Deletion"), ]
+  
   # Calculate the amplification and deletion frequency per gene
   gene_amp_counts <- list(primary = list(), metastatic = list())
   gene_del_counts <- list(primary = list(), metastatic = list())
@@ -98,11 +121,16 @@ for (subtype in all_subtypes) {
   for (idx in 1:nrow(primary_subtype_cna)) {
     # Get the gene for the row
     gene <- primary_subtype_cna[idx,]$Hugo_Symbol
-    # Count number of samples with CNA > 0 (amplification) and CNA < 0 (deletion)
-    gene_amp_counts[["primary"]][gene] <- sum(unlist(primary_subtype_cna[idx, -1]) > 0)
-    gene_del_counts[["primary"]][gene] <- sum(unlist(primary_subtype_cna[idx, -1]) < 0)
-    gene_amp_counts[["metastatic"]][gene] <- sum(unlist(metastatic_subtype_cna[idx, -1]) > 0)
-    gene_del_counts[["metastatic"]][gene] <- sum(unlist(metastatic_subtype_cna[idx, -1]) < 0)
+    
+    if (gene %in% onco_primary_amps$HUGO_SYMBOL | gene %in% onco_metastatic_amps$HUGO_SYMBOL) {
+      # Count number of samples with CNA > 0 (amplification) and CNA < 0 (deletion)
+      gene_amp_counts[["primary"]][gene] <- sum(unlist(primary_subtype_cna[idx, -1]) > 0)
+      gene_amp_counts[["metastatic"]][gene] <- sum(unlist(metastatic_subtype_cna[idx, -1]) > 0)
+    }
+    if (gene %in% onco_primary_dels$HUGO_SYMBOL | gene %in% onco_metastatic_dels$HUGO_SYMBOL) {
+      gene_del_counts[["primary"]][gene] <- sum(unlist(primary_subtype_cna[idx, -1]) < 0)
+      gene_del_counts[["metastatic"]][gene] <- sum(unlist(metastatic_subtype_cna[idx, -1]) < 0)
+    }
   }
 
   # Record the amplification and deletion frequencies
@@ -143,93 +171,131 @@ for (subtype in all_subtypes) {
   fusion_freqs[["metastatic"]][[subtype]] <- metastatic_fusion_frequencies
 }
 
-# Combine mutation, amplification, deletion and fusion data per subtype
-alteration_df <- data.frame()
+# Form data of all oncogenic alterations by combine mutation, amplification, deletion and fusion data per subtype
+oncogenic_alteration_df <- data.frame()
 
 for (subtype in all_subtypes) {
   # Get the alterative subtype name
   display_name <- table_s1a[which(table_s1a$curated_subtype_display == subtype), ][[1]]
   
-  # Add mutation frequencies for each subtype
-  alteration_df <- rbind(alteration_df,
-                         data.frame(subtype = subtype,
-                                    subtype_display = display_name,
-                                    alteration_type = "Mutation",
-                                    gene = names(mutation_freqs[["primary"]][[subtype]]),
-                                    primary_freq = unlist(mutation_freqs[["primary"]][[subtype]]),
-                                    metastatic_freq = unlist(mutation_freqs[["metastatic"]][[subtype]])))
-  # Add amplification frequencies
-  alteration_df <- rbind(alteration_df,
-                         data.frame(subtype = subtype,
-                                    subtype_display = display_name,
-                                    alteration_type = "Amplification",
-                                    gene = names(amp_freqs[["primary"]][[subtype]]),
-                                    primary_freq = unlist(amp_freqs[["primary"]][[subtype]]),
-                                    metastatic_freq = unlist(amp_freqs[["metastatic"]][[subtype]])))
-  # Add deletion frequencies
-  alteration_df <- rbind(alteration_df,
-                         data.frame(subtype = subtype,
-                                    subtype_display = display_name,
-                                    alteration_type = "Deletion",
-                                    gene = names(del_freqs[["primary"]][[subtype]]),
-                                    primary_freq = unlist(del_freqs[["primary"]][[subtype]]),
-                                    metastatic_freq = unlist(del_freqs[["metastatic"]][[subtype]])))
-  # Add fusion frequencies
-  alteration_df <- rbind(alteration_df,
-                         data.frame(subtype = subtype,
-                                    subtype_display = display_name,
-                                    alteration_type = "Fusion",
-                                    gene = names(fusion_freqs[["primary"]][[subtype]]),
-                                    primary_freq = unlist(fusion_freqs[["primary"]][[subtype]]),
-                                    metastatic_freq = unlist(fusion_freqs[["metastatic"]][[subtype]])))
+  if (length(mutation_freqs[["primary"]][[subtype]]) != 0) {
+    # Add mutation frequencies for each subtype
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Mutation",
+                                                gene = names(mutation_freqs[["primary"]][[subtype]]),
+                                                alteration = paste0(names(mutation_freqs[["primary"]][[subtype]]), "_", "mut"),
+                                                primary_freq = unlist(mutation_freqs[["primary"]][[subtype]]),
+                                                metastatic_freq = unlist(mutation_freqs[["metastatic"]][[subtype]])))
+  }
+  
+  # Check that amplifications found
+  if (length(amp_freqs[["primary"]][[subtype]]) != 0) {
+    # Add amplification frequencies
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Amplification",
+                                                gene = names(amp_freqs[["primary"]][[subtype]]),
+                                                alteration = paste0(names(amp_freqs[["primary"]][[subtype]]), "_", "Amplification"),
+                                                primary_freq = unlist(amp_freqs[["primary"]][[subtype]]),
+                                                metastatic_freq = unlist(amp_freqs[["metastatic"]][[subtype]])))
+  }
+  
+  # Check that deletions found
+  if (length(del_freqs[["primary"]][[subtype]]) != 0) {
+    # Add deletion frequencies
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Deletion",
+                                                gene = names(del_freqs[["primary"]][[subtype]]),
+                                                alteration = paste0(names(del_freqs[["primary"]][[subtype]]), "_", "Deletion"),
+                                                primary_freq = unlist(del_freqs[["primary"]][[subtype]]),
+                                                metastatic_freq = unlist(del_freqs[["metastatic"]][[subtype]])))
+  }
+  
+  # Check that fusions found
+  if (length(fusion_freqs[["primary"]][[subtype]]) != 0) {
+    
+    primary_fusions <- unlist(fusion_freqs[["primary"]][[subtype]])
+    metastatic_fusions <- unlist(fusion_freqs[["metastatic"]][[subtype]])
+    
+    # Rearrange so primary and metastatic frequencies per gene are in the same order
+    metastatic_fusions <- metastatic_fusions[order(match(names(metastatic_fusions), names(primary_fusions)))]
+    
+    # Add fusion frequencies
+    oncogenic_alteration_df <- rbind(oncogenic_alteration_df,
+                                     data.frame(subtype = subtype,
+                                                subtype_display = display_name,
+                                                alteration_type = "Fusion",
+                                                gene = names(primary_fusions),
+                                                alteration = paste0(names(primary_fusions), "_", "fusion"),
+                                                primary_freq = primary_fusions,
+                                                metastatic_freq = metastatic_fusions))
+  }
 }
 # Reset row names to numbers
-rownames(alteration_df) <- 1:nrow(alteration_df)
+rownames(oncogenic_alteration_df) <- 1:nrow(oncogenic_alteration_df)
 
+# Form a dataframe of recurrent oncogenic alterations 
+recurrent_onco_alts <- data.frame()
 
-
-# Find rows with oncogenic alterations, i.e. amplifications, mutations, deletions, fusions
-oncogenic_alterations <- table_s2a[which(table_s2a$alteration_type == "oncogenic alteration"),]
-
-# Form a dataframe of recurrent alterations 
-recurrent_alterations <- data.frame()
-
-for (r in 1:nrow(oncogenic_alterations)) {
+for (r in 1:nrow(oncogenic_alteration_df)) {
   # Get the row for an alteration
-  alteration_row <- oncogenic_alterations[r,]
+  alteration_row <- oncogenic_alteration_df[r,]
   
   # Record alteration if present in at least 5% of either primary or metastatic samples
-  if (alteration_row$primary_pc > 0.05 | alteration_row$metastasis_pc > 0.05) {
-    recurrent_alterations <- rbind(recurrent_alterations, alteration_row)
+  if (alteration_row["primary_freq"] > 0.05 | alteration_row["metastatic_freq"] > 0.05) {
+    recurrent_onco_alts <- rbind(recurrent_onco_alts, alteration_row)
   }
 }
 
-# Remove columns of all NA
-recurrent_alterations <- recurrent_alterations[, colMeans(is.na(recurrent_alterations)) != 1]
+# Find rows with oncogenic alterations, i.e. amplifications, mutations, deletions, fusions
+table_oncogenic <- removeEmptyCols(table_s2a[which(table_s2a$alteration_type == "oncogenic alteration"),])
 
 # Find significant alterations with q-value < 0.05
-significant_alterations <- recurrent_alterations[which(recurrent_alterations$qval < 0.05),]
+significant_alts <- table_oncogenic[which(table_oncogenic$qval < 0.05),]
+significant_alterations <- data.frame()
+
+for (subtype_display in unique(recurrent_onco_alts$subtype_display)) {
+  subtype_alts <- significant_alts[which(significant_alts$tumor_type == subtype_display), ]
+  
+  if (nrow(subtype_alts) > 0) {
+    # Record the significant alterations
+    subtype_recurrent_alts <- recurrent_onco_alts[which(recurrent_onco_alts$subtype_display == subtype_display), ]
+    significant_alterations <- rbind(significant_alterations,
+                                     subtype_recurrent_alts[which(subtype_recurrent_alts$alteration %in%
+                                                                    subtype_alts$alteration),])
+  }
+}
 
 # List tumour types to plot
-tumour_types <- unique(significant_alterations$tumor_type)
+tumour_types <- unique(significant_alterations$subtype_display)
 
 # Create dataframe to plot the alterations per tumour
 alteration_plot_df <- data.frame()
 
 for (tumour in tumour_types) {
   # Get the alterations for the tumour
-  tumour_alts <- significant_alterations[which(significant_alterations$tumor_type == tumour), ]
+  tumour_alts <- significant_alterations[which(significant_alterations$subtype_display == tumour), ]
   # Find the plot background colour
   tumour_colour <- table_s1a[which(table_s1a$curated_subtype == tumour), ]$color_subtype
   tumour_display_name <- table_s1a[which(table_s1a$curated_subtype == tumour), ]$curated_subtype_display
+  
+  # Count the number of primary samples
+  subtype <- tumour_alts$subtype[1]
+  primary_n <- nrow(samples_data[which(samples_data$SUBTYPE == subtype &
+                                         samples_data$SAMPLE_TYPE == "Primary"),])
   
   for (r in 1:nrow(tumour_alts)) {
     # Get the row for an alteration
     alteration_row <- tumour_alts[r,]
     
     # Get the alteration frequency for primary and metastatic samples
-    primary_freq <- alteration_row$primary_pc
-    metastasis_freq <- alteration_row$metastasis_pc
+    primary_freq <- alteration_row["primary_freq"]
+    metastasis_freq <- alteration_row["metastatic_freq"]
     
     if (primary_freq > metastasis_freq) {
       higher_in_metastasis <- FALSE
@@ -258,7 +324,7 @@ for (tumour in tumour_types) {
     # Append a row to the alteration dataframe
     alteration_plot_df <- rbind(alteration_plot_df,
                                 data.frame(tumour_type = tumour_display_name,
-                                           primary_n = tumour_alts$primary_n[1],
+                                           primary_n = primary_n,
                                            alteration_name = alt_name,
                                            alteration_type = alt_type,
                                            alternation_freq1 = min(primary_freq, metastasis_freq),
