@@ -375,7 +375,7 @@ for (i in 1:length(all_tumour_names)) {
   tumour_alts$higher_in_metastasis  <- factor(tumour_alts$higher_in_metastasis,
                                          levels = unique(tumour_alts$higher_in_metastasis))
   
-  if (tumour_alts$higher_in_metastasis[1]) {
+  if (as.logical(tumour_alts$higher_in_metastasis[1])) {
     # Set right and left facing triangles
     triangle_shapes <- c("\u25C4", "\u25BA")
     triangle_direction <- c("Higher in\nmetastasis", "Lower in\nMetastasis")
@@ -416,7 +416,7 @@ for (i in 1:length(all_tumour_names)) {
   tumour_alt_plots[[tumour_name]] <- alt_plot
 }
 
-cairo_pdf("Plot_2/Figure2C/Figure2C.pdf", width = 14, height = 12)
+cairo_pdf("Plot_2/Figure2C/Figure2C.pdf", width = 18, height = 12)
 ggarrange(plotlist = tumour_alt_plots, heights = c(4,2.5,1.5,1.5), 
           common.legend = TRUE, legend = "bottom")
 graphics.off()
