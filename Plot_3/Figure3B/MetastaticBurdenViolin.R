@@ -70,6 +70,7 @@ subtype_stats <- list(pancancer = metastaticStats(samples_data),
 # Create 3 by two subplots
 par(mfrow = c(4,2), mar = c(3, 4, 4, 2), mgp = c(2, 1, 0))
 
+cairo_pdf("Plot_3/Figure3B/Figure3B.pdf", width = 10, height = 15)
 for (subtype in names(subtype_stats)) {
 
   # Set the plot colours based on subtype
@@ -99,7 +100,6 @@ for (subtype in names(subtype_stats)) {
       title_postfix <- "- FGA (%)"
       add_legend <- FALSE
       y_axis_range <- c(1, 100)
-      print(y_axis_range)
     }
     
     # Plot split violin plots
@@ -130,3 +130,4 @@ for (subtype in names(subtype_stats)) {
     }
   }
 }
+graphics.off()
