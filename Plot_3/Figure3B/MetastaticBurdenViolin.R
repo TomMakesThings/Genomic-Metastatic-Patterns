@@ -68,9 +68,9 @@ subtype_stats <- list(pancancer = metastaticStats(samples_data),
                       colorectal = metastaticStats(samples_data[which(samples_data$SUBTYPE == subtypes[4]), ]))
 
 # Create 3 by two subplots
+cairo_pdf("Plot_3/Figure3B/Figure3B.pdf", width = 10, height = 13)
 par(mfrow = c(4,2), mar = c(3, 4, 4, 2), mgp = c(2, 1, 0))
 
-cairo_pdf("Plot_3/Figure3B/Figure3B.pdf", width = 10, height = 15)
 for (subtype in names(subtype_stats)) {
 
   # Set the plot colours based on subtype
