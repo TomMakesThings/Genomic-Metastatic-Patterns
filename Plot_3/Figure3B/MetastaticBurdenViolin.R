@@ -88,15 +88,18 @@ for (subtype in names(subtype_stats)) {
     
     # Select the type of data
     if (type == "TMB") {
-      primary_data <- subtype_stats[[subtype]]$tmb_primary
-      metastasis_data <- subtype_stats[[subtype]]$tmb_metastasis
+      primary_data <- (subtype_stats[[subtype]]$tmb_primary + 1)
+      metastasis_data <- (subtype_stats[[subtype]]$tmb_metastasis + 1)
       title_postfix <- "- TMB (mut/Mb)"
       add_legend <- TRUE
+      y_axis_range <- c(1, 500)
     } else {
-      primary_data <- subtype_stats[[subtype]]$fga_primary * 100
-      metastasis_data <- subtype_stats[[subtype]]$fga_metastasis * 100
+      primary_data <- (subtype_stats[[subtype]]$fga_primary * 100 + 1)
+      metastasis_data <- (subtype_stats[[subtype]]$fga_metastasis * 100 + 1)
       title_postfix <- "- FGA (%)"
       add_legend <- FALSE
+      y_axis_range <- c(1, 100)
+      print(y_axis_range)
     }
     
     # Plot split violin plots
@@ -106,13 +109,17 @@ for (subtype in names(subtype_stats)) {
             col = colour_primary,
             xlab = x_label,
             main = paste(plot_title, title_postfix),
-            pchMed = 20)
+            pchMed = 20,
+            ylog = TRUE,
+            ylim = y_axis_range)
     vioplot(metastasis_data,
             colMed = "white",
             side = "right",
             col = colour_metastasis,
             pchMed = 20,
-            add = TRUE)
+            add = TRUE,
+            ylog = TRUE,
+            ylim = y_axis_range)
     
     # Add legend only to right plots
     if (add_legend) {
