@@ -365,6 +365,16 @@ for (i in 1:length(all_tumour_names)) {
   
   # Find the rows for the tumour type
   tumour_alts <- alteration_plot_df[which(alteration_plot_df$tumour_type == tumour_name),]
+  
+  repeat_alts <- data.frame(table(tumour_alts$alteration_name))
+  for (alt in repeat_alts[repeat_alts$Freq > 1,]$Var1) {
+    repeated_alt_rows <- tumour_alts[which(tumour_alts$alteration_name == alt), ]
+    unique_names <- paste0(repeated_alt_rows$alteration_name,
+                                                " (", lapply(repeated_alt_rows$alteration_type,
+                                                             function(x) substr(x, 1, 1)), ")")
+    tumour_alts[which(tumour_alts$alteration_name == alt), ]$alteration_name <- unique_names
+  }
+  
   # Convert columns to factors to keep order
   tumour_alts$triangle_color <- factor(tumour_alts$triangle_color,
                                           levels = unique(tumour_alts$triangle_color))
@@ -412,7 +422,6 @@ for (i in 1:length(all_tumour_names)) {
           panel.grid.minor.y = element_line(linetype = "dotted", size = 0.7)) +
     guides(color = guide_legend(title = ""),
            shape = guide_legend(title = ""))
-  alt_plot
   tumour_alt_plots[[tumour_name]] <- alt_plot
 }
 
