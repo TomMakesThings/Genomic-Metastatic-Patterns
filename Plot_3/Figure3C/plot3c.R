@@ -66,7 +66,7 @@ LA <- plot3c(df, tumor = "Lung Adenocarcinoma",themecolor = "#b368d9")
 BD <- plot3c(df, tumor = "Breast Ductal HR+HER2-",themecolor = "#e6308e")
 CM <- plot3c(df, tumor = "Colorectal MSS",themecolor = "#007eb5")
 TP <- plot3c(df, tumor = "Thyroid Papillary",themecolor = "#cccc33")
-BDP <- plot3c(df, tumor = "Colorectal MSS",themecolor = "#e6308e")
+BDP <- plot3c(df, tumor = "Breast Ductal HR+HER2+",themecolor = "#e6308e")
 BL <- plot3c(df, tumor = "Breast Lobular HR+",themecolor = "#e6308e")
 BU <- plot3c(df, tumor = "Bladder Urothelial",themecolor = "#F8766D")
 
