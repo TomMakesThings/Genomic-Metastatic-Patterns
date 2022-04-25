@@ -1,15 +1,20 @@
 \documentclass{article}
+\usepackage{listings}
+\lstset{breaklines=true}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+
 
 \title{Genomics II Group Project}
 \author{Tom Wilson, Qingqing Zhou, Zhan Shi and Ralph Estanboulieh}
 
+
 \maketitle
 
 \section{About}
-The paper we recreated is "Genomic characterization of metastatic patterns from prospective clinical sequencing of 25,000 patients", under supervision of Kate Eason.
+The paper we recreated is "Genomic characterization of metastatic patterns from prospective clinical sequencing of 25,000 patients", under supervision of Kate Eason. 
+
+Our Github page: https://github.com/TomMakesThings/Genomics-II-Group
 
 \subsection{Contributions}
 Tom: plotting figures 2C, 3A and 3B calculation of FGA, WGD, alteration annotation with OncoKB, running ASCATS for arm-level CNA annotation, spearmans correlation coefficient, Mann-Whitney U tests and regression to find significance difference between primary and metastatic samples
@@ -75,9 +80,104 @@ In the original paper, FACETS was used to estimate WGD. However, this tool requi
 The ASCETS version was estimated based on the fraction of amplification across all a sample's chromosomes. See code for ASCETS in section 2.
 
 \subsection{Tumor Mutational Burden (TMB)}
+Tumor mutational burden (TMB) was calculated for each sample as the total number of nonsynonymous mutations, divided by the number of bases sequenced. 
 
 <<echo = T, eval = F>>=
-CODE HERE
+#######   TMB calculation ############
+
+library(dplyr)
+library(reshape2)
+
+setwd("~/AllMphil/GenomicsAS3/")
+
+## Tumor mutational burden (TMB) was calculated for each sample as the total number of nonsynonymous mutations, divided by the
+## number of bases sequenced. 
+
+##IMPACT468 - 1156473 base
+
+#IMPACT341 - 901587 base
+
+#IMPACT410 - 1021743 base
+
+table_S1 <- read.csv("supplementary_table/table_S1.csv", header = TRUE, skip = 2) #25775 obs. of  56 variables
+clinical_sample <- read.table("data/data_clinical_sample.txt", sep = "\t",header = TRUE)
+mutations <- read.table("data/data_mutations.txt", sep = "\t",quote = "",header = TRUE)
+panels <- read.table("data/data_gene_panel_matrix.txt", sep = "\t",header = TRUE)
+cbioportal <- read.table("supplementary_table/cbioportal.tsv", sep = "\t", header = TRUE)
+
+
+true_TMB <- data.frame(sampleID = cbioportal$Sample.ID, TMB = cbioportal$TMB..nonsynonymous.)
+mut <- data.frame(sampleID = mutations$Tumor_Sample_Barcode, consequence = mutations$Consequence,
+                  variant_classification = mutations$Variant_Classification,
+                  variant_type = mutations$Variant_Type, Is_nonsynonymous=NA) #some of the sampleID do not have mutation data, in those cases, TMB=0
+
+
+
+## set the total length (base) of sequence of each platform 
+platforms <- unique(panels$mutations) #"IMPACT468" "IMPACT410" "IMPACT341"
+sequence_length <- c(1156473, 1021743, 901587)
+names(sequence_length) <- platforms
+
+
+## set the variant_classification that count as "nonsynonymous mutations", in total 9 types
+
+variant_classification <- unique(mut$variant_classification)
+
+no_variant_class <- c("5'Flank", "Translation_Start_Site", "3'Flank",
+                      "Silent", "5'UTR", "IGR","Intron") #does not count as "nonsynonymous mutations", 7 types
+yes_variant_class <- variant_classification[!variant_classification %in% no_variant_class] # count as "nonsynonymous mutations", 9 types
+
+
+## count the number of "nonsynonymous mutations" of each sample
+add.nonsynonymous.mut <- mutate(mut, Is_nonsynonymous = as.numeric(variant_classification %in% yes_variant_class)) #230419 obs. of  5 variables, 24755 unique sampleIDs
+
+merged.mut <- data.frame(sampleID = true_TMB$sampleID, 
+                        num_nonsynonymous = 0,
+                        panel = NA,
+                        total_sequence = NA, #25775 obs. of  5 variables
+                        TMB = 0)
+
+#add in panel info of each sample
+map_mut_panel <- panels$mutations
+names(map_mut_panel) <- panels$SAMPLE_ID
+
+merged.mut$panel = unname(map_mut_panel[merged.mut$sampleID])
+
+#add in sequence length info of each sample
+merged.mut <- merged.mut %>%
+    mutate(., total_sequence = unname(sequence_length[panel]))
+
+
+#add in count of nonsynonymous mutations for each sample
+
+count_name <- unique(add.nonsynonymous.mut$sampleID) #24755
+count <- rep(0, length(count_name)) #24755
+
+for (i in 1:length(count_name)){
+    x <- subset(add.nonsynonymous.mut, sampleID == count_name[i])
+    count[i] <- sum(x$Is_nonsynonymous)
+} #1:29 starts 1:30 ends
+
+names(count) <- count_name #24755
+
+merged.mut <- mutate(merged.mut, num_nonsynonymous = count[merged.mut$sampleID]) %>%
+    mutate_all(~replace(., is.na(.), 0))%>%
+    mutate(TMB = num_nonsynonymous * 10^6 / total_sequence)
+
+names(merged.mut$num_nonsynonymous) <- NULL
+names(merged.mut$TMB) <- NULL
+
+
+## output
+our_TMB <- cbind.data.frame(clinical_sample[, 1:18], Our_TMB = merged.mut$TMB, 
+                            Sup_TMB = table_S1$tmb,
+                            clinical_sample[, 19:42])
+
+
+write.csv(our_TMB, file = "tmb/calculated_TMB.csv",row.names = FALSE)
+
+
+
 @
 
 \subsubsection{Figure 2A Plotting Code}
@@ -1504,8 +1604,320 @@ for (subtype in names(subtype_stats)) {
 
 \subsection{Figure 3C}
 
+Spearman's correlation was performed on oncogenic alteration data (amplification, deletion, mutation) and MB. The significant results were further filtered with multivariable linear modeling to exclude the effect from sample subtype (primary/metastatic).
+
 <<echo = T, eval = F>>=
-CODE HERE
+#############Run spearman on oncogenic alterations (amp, del, mut)###############
+#############then multi-variablelinear model#######
+
+library(readxl)
+library(DescTools)
+library(ggplot2)
+
+setwd("~/AllMphil/GenomicsAS3/")
+
+table_s3b <- read_excel("supplementary_table/1-s2.0-S0092867422000034-mmc3.xlsx", sheet = 2, skip = 2) #my target
+
+##############################use cbioportal cna  to try amp & del#####################
+cna3c <- read.table("cBioPortal/cna_3c.txt", sep = "\t", header = TRUE) #25775    19
+mut3c <- read.table("cBioPortal/mut_3c.txt", sep = "\t", header = TRUE) #25775     19
+
+
+
+
+#map tumor subtype info into cna10 & mut10 using table "data_clinical_sample.txt"
+
+clinical_sample <- read.table("data/data_clinical_sample.txt", sep = "\t",header = TRUE)
+sampleID_subtype <- clinical_sample[c("SAMPLE_ID", "PATIENT_ID","SAMPLE_TYPE","SUBTYPE", "SUBTYPE_ABBREVIATION",
+                                      "MET_SITE_COUNT")] ##get useful column
+
+add_subtype <- function(df, sampleID_subtype){
+    if(all(df[,2]==sampleID_subtype$SAMPLE_ID)){
+        merged_df <- cbind.data.frame(df[,1:2], SUBTYPE_ABBREVIATION = sampleID_subtype$SUBTYPE_ABBREVIATION,
+                                      SUBTYPE = sampleID_subtype$SUBTYPE,
+                                      SAMPLE_TYPE = sampleID_subtype$SAMPLE_TYPE,
+                                      MET_SITE_COUNT = sampleID_subtype$MET_SITE_COUNT,
+                                      PATIENT_ID = sampleID_subtype$PATIENT_ID,
+                                      df[,-c(1,2)])
+        return(merged_df)
+    }else{
+        stop("sampleID and subtype order not mapped! sort and check!")
+    }
+    
+}
+
+cna3c <- add_subtype(cna3c, sampleID_subtype)
+mut3c <- add_subtype(mut3c, sampleID_subtype)
+
+
+##make new amp dataframe: in all genes, only keep count cna > 0 data, cna <0 (del) converted to 0
+
+amp_generate <- function(df){
+    
+    w <- ncol(df)
+    
+    for (i in 8:w){ #gene starts from 8th column
+        df[which(df[, i]<0), i] <- 0
+    }
+    
+    return(df)
+}
+
+del_generate <- function(df){
+    w <- ncol(df)
+    
+    for (i in 8:w){ #gene starts from 8th column
+        df[which(df[, i]>0), i] <- 0
+        df[,i] <- abs(df[,i])
+    }
+    
+    return(df)
+}
+
+cna3c_amp <- amp_generate(cna3c) #all del cna converted to 0
+cna3c_del <- del_generate(cna3c)
+
+##merge CCND1/FGF 19
+cna3c_amp <- mutate(cna3c_amp, CCND1_FGF19 = CCND1 + FGF19)
+cna3c_del <- mutate(cna3c_del, CCND1_FGF19 = CCND1 + FGF19)
+
+subtype_spearman <- function(df, alt="Amplification"){
+    
+    df <- subset(df, df$MET_SITE_COUNT > 0) #Inferred from "n_pts", so we're only looking at patients with MB
+    
+    #get the list of cancer subtypes
+    all_subtypes <- unique(df$SUBTYPE)
+    all_genes <- colnames(df[ ,-(1:7)])
+    
+    #spearman returns NA when two lists are the same / one of them is pure 0.
+    output <- data.frame(tumor_type=rep(all_subtypes, each=length(all_genes)), 
+                         genes=all_genes,
+                         alteration=paste0(all_genes,"_",alt),
+                         n_pts=NA,
+                         rho=NA,
+                         lwr.ci=NA,
+                         upr.ci=NA,
+                         pvalue=NA,
+                         adj.qvalue=NA,
+                         sig.afterSpearman=NA)
+    
+    
+    #calculate spearman coef for each subtype
+    for (i in 1:nrow(output)){
+        
+        
+        tumor <- output$tumor_type[i]
+        gene <- output$genes[i]
+        
+        tumor_df <- subset(df, df$SUBTYPE == tumor) 
+        
+        #timer
+        if (i %% 100 == 0){
+            print(paste0("current gene:",gene))
+        }
+        #run spearman
+        run <- SpearmanRho(x=tumor_df[,gene], y=tumor_df$MET_SITE_COUNT, conf.level = 0.95)
+        output[i, c("rho", "lwr.ci", "upr.ci")] <- unname(run)
+        
+        #extract p-value
+        pvalue <- cor.test(tumor_df[,gene],
+                           tumor_df$MET_SITE_COUNT,
+                           method = "spearman",
+                           exact = FALSE)$p.value
+        output[i, "pvalue"] <- pvalue
+        
+        #add n_pts
+        output[i, "n_pts"] <- nrow(tumor_df)
+        
+    }
+    
+    # Adjust p-values for false discovery rate
+    output$adj.qvalue <- p.adjust(output$pvalue, method = "fdr")
+    
+    # Mark significant genes for each subtype
+    output$sig.afterSpearman <- ((output$pvalue < 0.05) & (output$adj.qvalue < 0.05))
+    
+    return(output)
+    
+}
+
+##Run linear model for each subtype: MET_SITE_COUNT ~ SAMPLE_TYPE + CNA_AMP
+
+run_lm <- function(df_spearman, cna_df){ 
+    
+    all_subtypes <- unique(cna_df$SUBTYPE) #50 subtypes
+    all_genes <- unique(df_spearman$genes)
+    
+    df_spearman$lm.pvalue <- NA
+    df_spearman$lm.sig <- NA
+    
+    
+    for (i in all_subtypes){
+        subtype_cna <- subset(cna_df, cna_df$SUBTYPE == i)
+        #only MB>0 #new
+        subtype_cna <- subset(subtype_cna, subtype_cna$MET_SITE_COUNT>0)
+        
+        regression_coefficients <- rep(NA, length(all_genes))
+        coefficient_p_value <- rep(NA, length(all_genes))
+        
+        for (j in 1:length(all_genes)){ 
+            
+            
+            regression_results <- lm(as.formula(paste("MET_SITE_COUNT ~ SAMPLE_TYPE +", all_genes[j])),
+                                     data = subtype_cna) 
+            
+            # Get the p-value for the CNA of gene coefficient and check if significant
+            
+            regression_coefficients <- data.frame(summary(regression_results)$coefficients)
+            coefficient_p_value[j] <- regression_coefficients[all_genes[j],]$Pr...t.. 
+            
+            df_spearman[which(df_spearman$tumor_type==i), ]$lm.pvalue <- coefficient_p_value
+            
+            
+        }
+    }
+    
+    df_spearman$lm.sig <- df_spearman$lm.pvalue < 0.05
+    
+     
+    df_spearman$final.sig <- df_spearman$lm.sig & df_spearman$sig.afterSpearman
+    
+    return(df_spearman)
+}
+
+
+amp_spearman <- subtype_spearman(cna3c_amp, alt = "Amplification")
+amp_lm <- run_lm(amp_spearman, cna3c_amp)
+
+del_spearman <- subtype_spearman(cna3c_del, alt = "Deletion")
+del_lm <- run_lm(del_spearman, cna3c_del)
+
+
+
+amp_spearman_sig <- subset(amp_lm, amp_lm$final.sig)
+del_spearman_sig <- subset(del_lm, del_lm$final.sig)
+
+#remove merged gene : CCND1 and FGF19
+out_amp <- subset(amp_spearman_sig,!amp_spearman_sig$genes %in% c("CCND1","FGF19"))
+out_del <- subset(del_spearman_sig,!del_spearman_sig$genes %in% c("CCND1","FGF19"))
+
+
+write.table(out_amp, file="plotdata/out_amp.txt",sep = "\t")
+
+write.table(out_del, file = "plotdata/out_del.txt",sep = "\t")
+
+
+#############mutations########
+###count mutations in each gene, each sample #count promoter, splice, driver and non-driver
+
+count_mut <- function(df){
+    w <- ncol(df)
+    h <- nrow(df)
+    
+    for (i in 8:w){ #gene starts from 8th column
+        wt <- which(df[ ,i]=="WT")
+        df[wt, i] <- 0
+        
+        all <- 1:h
+        non_wt <- all[-wt]
+        
+        for(j in non_wt){
+            df[j,i] <- as.numeric(str_count(df[j,i], pattern=" ") + 1)
+        }
+        
+        df[, i] <- as.numeric(df[, i])
+    }
+    
+    return(df)
+    
+}
+
+count_mut3c <- count_mut(mut3c)
+
+#######plot 3c##################
+
+library(ggplot2)
+library(egg)
+library(cowplot)
+
+setwd("~/AllMphil/GenomicsAS3/")
+
+out_amp <- read.table("plotdata/out_amp.txt",sep = "\t")
+out_del <- read.table("plotdata/out_del.txt",sep = "\t")
+out_mut <- read.table("plotdata/out_mut.txt",sep = "\t")
+
+#get useful columns
+useful_columns <- c("tumor_type", "genes", "alteration", "n_pts","rho","lwr.ci","upr.ci")
+df <- rbind.data.frame(out_amp[useful_columns],
+                       out_del[useful_columns],
+                       out_mut[useful_columns])
+df$alt <- sapply(df$alteration, function(x){
+    list <- strsplit(x, "_(?!.*_)", perl=TRUE)
+    return(unlist(list)[2])
+})
+
+df$color.code <- sapply(df$alt, function(x){
+    if (x=="Amplification"){
+        y <- "red"
+    }else if (x=="Mutation"){
+        y <- "forestgreen"
+    }else{
+        y <- "blue"
+    }
+    return(y)
+})
+
+#plot function
+plot3c <- function(df, tumor, themecolor){
+    df <- subset(df, df$tumor_type == tumor)
+    df <- df[order(df$rho, decreasing = FALSE), ]
+    df$alteration <- factor(df$alteration, levels = df$alteration)
+    #df$genes <- factor(df$genes, levels = df$genes)
+
+    plot <- ggplot(data = df, aes(x=alteration, y=rho, colour=color.code,
+                                  ymin = lwr.ci, ymax = upr.ci
+                                  ))+
+        geom_pointrange(size=0.8)+
+        coord_flip()+
+        scale_colour_identity()+
+        geom_hline(yintercept = 0, color = "white", size = 1)+
+        scale_y_continuous(position = "right", limits = c(-0.4, 0.4), 
+                           breaks = c(-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4))+
+        theme(plot.title = element_text(size = 12, hjust = 0, vjust = 0), # Set title position
+              plot.caption.position = "plot", # Set caption position and size
+              plot.caption = element_text(hjust = 1, size = 8),
+              axis.text.y = element_text(hjust = 1), # Colour labels
+              legend.position = "bottom",
+              panel.grid.major.x = element_blank(), # Hide x-axis background grid lines
+              panel.grid.minor.x = element_blank(),
+              panel.grid.major.y = element_line(linetype = "dotted", size = 0.8), # Set style of y-axis background grid lines
+              panel.grid.minor.y = element_line(linetype = "dotted", size = 0.8),
+              panel.background = element_rect(fill = alpha(themecolor,0.2), color =themecolor))+
+        labs(title = paste0(df$tumor_type[1], "(",df$n_pts[1],")"),x="",y="")+
+        scale_x_discrete(labels= df$genes)
+
+    return(plot)
+}
+
+PA <- plot3c(df, tumor = "Prostate Adenocarcinoma",themecolor = "#be1e2d")
+LA <- plot3c(df, tumor = "Lung Adenocarcinoma",themecolor = "#b368d9")
+BD <- plot3c(df, tumor = "Breast Ductal HR+HER2-",themecolor = "#e6308e")
+CM <- plot3c(df, tumor = "Colorectal MSS",themecolor = "#007eb5")
+TP <- plot3c(df, tumor = "Thyroid Papillary",themecolor = "#cccc33")
+BDP <- plot3c(df, tumor = "Colorectal MSS",themecolor = "#e6308e")
+BL <- plot3c(df, tumor = "Breast Lobular HR+",themecolor = "#e6308e")
+BU <- plot3c(df, tumor = "Bladder Urothelial",themecolor = "#F8766D")
+
+
+
+
+final <- plot_grid(PA,LA,BD,CM,TP,BDP,BL,BU, nrow = 8, rel_heights = 6*c(1,4/7,3/7,2/7,3/7,2/7,2/7,2/7))
+
+ggsave("plot/fig3c.png", plot = final, width = 6, height = 15)
+ggsave("plot/fig3c.pdf", plot = final, width = 6, height = 15)
+
+
+
 @
 
 \section{Figure 4}
