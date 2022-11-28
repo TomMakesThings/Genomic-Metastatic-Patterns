@@ -9,7 +9,7 @@
 <br>
 
 # About
-The aim of this project is to recreate the results from the paper "[Genomic characterization of metastatic patterns from prospective clinical sequencing of 25,000 patients](https://www.sciencedirect.com/science/article/pii/S0092867422000034)".
+Metastasis is defined as the spread of cancer to different part of the body from where it originated. At present, the underlying genomic mechanisms of metastatic progression are not well known. In this project, we used the MSK-MET dataset to attempt to recreate and extend the results from the paper: "[Genomic characterization of metastatic patterns from prospective clinical sequencing of 25,000 patients](https://www.sciencedirect.com/science/article/pii/S0092867422000034)".
 
 # Data
 ## Memorial Sloan Kettering - Metastatic Events and Tropisms (MSK-MET)
