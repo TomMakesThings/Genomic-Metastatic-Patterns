@@ -32,5 +32,11 @@ In addition, cBioPortal gene panels were downloaded from the [cBioPortal Public 
 ## Genomic Features in Primary vs Metastases
 <img src="https://github.com/TomMakesThings/Genomic-Metastatic-Patterns/blob/main/Plot_2/Figure2B/fig2b.png" width="700px">
 
+## Oncogenic Alterations Associated with Metastatic Burden
+<img src="https://github.com/TomMakesThings/Genomic-Metastatic-Patterns/blob/main/Plot_3/Figure3C/fig3c.png" width="400px">
+
+<!---## Spearman's Correlation Between FGA/TMB with Metastatic Burden
+<img src="https://github.com/TomMakesThings/Genomic-Metastatic-Patterns/blob/main/Plot_3/Figure3A/Figure_3A.pdf" width="700px">--->
+
 <!---## Significant Oncogenic Alterations Between Primary Tumours and Metastases
 <img src="https://github.com/TomMakesThings/Genomic-Metastatic-Patterns/blob/main/Plot_2/Figure2B/fig2b.png" width="700px">--->
